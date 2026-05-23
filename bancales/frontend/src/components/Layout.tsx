@@ -33,7 +33,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-brand-dark">
           <div className="flex items-center gap-3 min-w-0">
-            <img src="/logo.png" alt="CAT SA" className="h-9 w-9 object-contain flex-shrink-0 rounded" />
+            <img src="/logo_cat.jpg" alt="CAT SA" className="h-9 w-9 object-contain flex-shrink-0 rounded" />
             <div className="min-w-0">
               <p className="text-sm font-bold leading-tight text-white">Control CT</p>
               <p className="text-xs text-blue-200 leading-tight">v1.0</p>
