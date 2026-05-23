@@ -90,6 +90,7 @@ export interface BancalSimple {
   codigo: string;
   cliente: Cliente;
   ultimaLectura: string | null;
+  ultimoTipo?: TipoEvento | null;
 }
 
 export interface BancalDescuadre extends BancalSimple {

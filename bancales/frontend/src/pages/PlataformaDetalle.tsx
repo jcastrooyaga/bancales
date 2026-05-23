@@ -4,7 +4,7 @@ import { apiClient } from '../api/client';
 import { WeekSelector, currentWeek } from '../components/WeekSelector';
 import { WeekId, DetalleData, MovimientoItem, BancalSimple, BancalDescuadre } from '../types';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -44,6 +44,22 @@ const MovimientosModal: React.FC<ModalProps> = ({ title, items, onClose }) => (
   </div>
 );
 
+// ─── Custom X-axis tick with descuadre ────────────────────────────────────────
+
+const WeekTick: React.FC<{ x?: number; y?: number; payload?: { value: string }; data: { semana: string; desviacion: number }[] }> = ({ x = 0, y = 0, payload, data }) => {
+  const entry = data.find(d => d.semana === payload?.value);
+  const desviacion = entry?.desviacion ?? 0;
+  const color = desviacion < 0 ? '#dc2626' : desviacion > 0 ? '#16a34a' : '#94a3b8';
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={12} textAnchor="middle" fill="#64748b" fontSize={11}>{payload?.value}</text>
+      <text x={0} y={0} dy={26} textAnchor="middle" fill={color} fontSize={10}>
+        {desviacion === 0 ? '(0)' : desviacion > 0 ? `(+${desviacion})` : `(${desviacion})`}
+      </text>
+    </g>
+  );
+};
+
 // ─── Bancal list item ─────────────────────────────────────────────────────────
 
 const BancalRow: React.FC<{ b: BancalSimple; onClick: () => void; extra?: React.ReactNode }> = ({ b, onClick, extra }) => (
@@ -54,6 +70,13 @@ const BancalRow: React.FC<{ b: BancalSimple; onClick: () => void; extra?: React.
     <span className="font-mono font-medium text-slate-800 text-sm">{b.codigo}</span>
     <div className="flex items-center gap-2">
       {extra}
+      {b.ultimoTipo && (
+        <span className={`text-xs px-1.5 py-0.5 rounded-full font-mono ${
+          b.ultimoTipo === 'CNTI' ? 'bg-green-100 text-green-700' :
+          b.ultimoTipo === 'CNTO' ? 'bg-orange-100 text-orange-700' :
+          'bg-blue-100 text-blue-700'
+        }`}>{b.ultimoTipo}</span>
+      )}
       <span className={`text-xs px-1.5 py-0.5 rounded-full ${b.cliente === 'MICHELIN' ? 'bg-indigo-100 text-indigo-700' : 'bg-violet-100 text-violet-700'}`}>
         {b.cliente === 'MICHELIN' ? 'M' : 'C'}
       </span>
@@ -174,13 +197,14 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       {/* Evolution chart */}
       <div className="bg-white rounded-xl border p-4 mb-4">
         <h2 className="text-sm font-semibold text-slate-700 mb-4">Evolución histórica (últimas 12 semanas)</h2>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={historico}>
+        <ResponsiveContainer width="100%" height={230}>
+          <LineChart data={historico} margin={{ bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="semana" tick={{ fontSize: 11 }} />
+            <XAxis dataKey="semana" tick={(props) => <WeekTick {...props} data={historico} />} height={50} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip />
             <Legend />
+            <ReferenceLine y={0} stroke="#16a34a" strokeWidth={1.5} strokeDasharray="4 4" />
             <Line type="monotone" dataKey="real" name="Real" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
             <Line type="monotone" dataKey="teorico" name="Teórico" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} />
           </LineChart>

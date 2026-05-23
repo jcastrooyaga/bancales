@@ -199,7 +199,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const bancalesEnPlataforma = candidatos
         .filter(b => latestHereMap.get(b.id) !== 'CNTO'
           && b.ultimaLectura !== null && b.ultimaLectura >= prevBounds.cntsStart)
-        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }));
+        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura, ultimoTipo: latestHereMap.get(b.id) ?? null }));
 
       // En riesgo: in platform (as above) AND no activity anywhere within umbral period
       // ultimaLectura is the global last event timestamp — covers all platforms
