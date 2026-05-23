@@ -262,8 +262,8 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
                 b={b}
                 onClick={() => navigate(`/bancales/${b.codigo}`)}
                 extra={
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${b.motivo === 'ANTERIOR' ? 'bg-slate-100 text-slate-600' : 'bg-green-100 text-green-700'}`}>
-                    {b.motivo === 'ANTERIOR' ? 'Ant.' : 'Ent.'}
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-mono ${b.motivo === 'ANTERIOR' ? 'bg-slate-100 text-slate-600' : 'bg-green-100 text-green-700'}`}>
+                    {b.motivo === 'ANTERIOR' ? 'INV.ANT' : 'CNTI'}
                   </span>
                 }
               />
