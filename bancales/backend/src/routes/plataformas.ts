@@ -66,36 +66,43 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const prevBounds = getWeekBounds(prevW.year, prevW.week);
 
       // --- Resumen semanal ---
+      // Note: Prisma does not allow `distinct` + `include`, so all queries use `select`
       type EvtRow = { bancalId: string; lectura: Date; bancal: { codigo: string; cliente: string } };
       const mapEvt = (e: EvtRow) => ({ codigo: e.bancal.codigo, cliente: e.bancal.cliente, lectura: e.lectura });
+
+      const evtSelect = {
+        bancalId: true,
+        lectura: true,
+        bancal: { select: { codigo: true, cliente: true } },
+      } as const;
 
       const [prevCntsEvts, cntiEvts, cntoEvts, cntsEvts] = await Promise.all([
         // Previous week CNTS (distinct bancals)
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
             lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd } },
-          include: { bancal: { select: { codigo: true, cliente: true } } },
+          select: evtSelect,
           distinct: ['bancalId'], orderBy: { bancal: { codigo: 'asc' } },
         }),
-        // CNTI this week (all events, used for detail list)
+        // CNTI this week
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTI',
             lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd } },
-          include: { bancal: { select: { codigo: true, cliente: true } } },
+          select: evtSelect,
           orderBy: { lectura: 'asc' },
         }),
         // CNTO this week
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTO',
             lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd } },
-          include: { bancal: { select: { codigo: true, cliente: true } } },
+          select: evtSelect,
           orderBy: { lectura: 'asc' },
         }),
         // Current week CNTS (distinct bancals)
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
             lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd } },
-          include: { bancal: { select: { codigo: true, cliente: true } } },
+          select: evtSelect,
           distinct: ['bancalId'], orderBy: { bancal: { codigo: 'asc' } },
         }),
       ]);
