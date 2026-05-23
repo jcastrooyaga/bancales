@@ -48,7 +48,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
 
   router.get('/:codigo/detalle', async (req, res, next) => {
     try {
-      const plataforma = await prisma.plataforma.findUnique({ where: { codigo: req.params.codigo } });
+      const plataforma = await prisma.plataforma.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });
       if (!plataforma) throw createError(404, 'Plataforma no encontrada');
 
       const semanaParam = String(req.query.semana ?? formatWeek(currentWeek()));
@@ -60,57 +60,69 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const threshold = new Date();
       threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
 
-      // Week bounds for current and previous week
       const bounds = getWeekBounds(w.year, w.week);
       const prevW = previousWeek(w);
       const prevBounds = getWeekBounds(prevW.year, prevW.week);
 
-      // --- Resumen semanal ---
-      // Note: Prisma does not allow `distinct` + `include`, so all queries use `select`
-      type EvtRow = { bancalId: string; lectura: Date; bancal: { codigo: string; cliente: string } };
-      const mapEvt = (e: EvtRow) => ({ codigo: e.bancal.codigo, cliente: e.bancal.cliente, lectura: e.lectura });
-
-      const evtSelect = {
-        bancalId: true,
-        lectura: true,
-        bancal: { select: { codigo: true, cliente: true } },
-      } as const;
-
-      const [prevCntsEvts, cntiEvts, cntoEvts, cntsEvts] = await Promise.all([
-        // Previous week CNTS (distinct bancals)
+      // Fetch raw event lists (only bancalId + lectura — no distinct, no include, no raw SQL)
+      const simpleSelect = { bancalId: true, lectura: true };
+      const [prevCntsRaw, cntiRaw, cntoRaw, cntsRaw] = await Promise.all([
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
             lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd } },
-          select: evtSelect,
-          distinct: ['bancalId'], orderBy: { bancal: { codigo: 'asc' } },
+          select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
-        // CNTI this week
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTI',
             lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd } },
-          select: evtSelect,
-          orderBy: { lectura: 'asc' },
+          select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
-        // CNTO this week
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTO',
             lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd } },
-          select: evtSelect,
-          orderBy: { lectura: 'asc' },
+          select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
-        // Current week CNTS (distinct bancals)
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
             lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd } },
-          select: evtSelect,
-          distinct: ['bancalId'], orderBy: { bancal: { codigo: 'asc' } },
+          select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
       ]);
 
+      // De-duplicate CNTS by bancalId in JS (keep earliest per bancal)
+      const dedupByBancal = (rows: { bancalId: string; lectura: Date }[]) => {
+        const seen = new Set<string>();
+        return rows.filter(r => seen.has(r.bancalId) ? false : (seen.add(r.bancalId), true));
+      };
+      const prevCntsEvts = dedupByBancal(prevCntsRaw);
+      const cntsEvts = dedupByBancal(cntsRaw);
+
+      // Distinct bancalId sets
+      const prevCntsIds = new Set(prevCntsEvts.map(e => e.bancalId));
+      const cntiIds = new Set(cntiRaw.map(e => e.bancalId));
+      const cntoIds = new Set(cntoRaw.map(e => e.bancalId));
+      const cntsIds = new Set(cntsEvts.map(e => e.bancalId));
+
+      // Fetch bancal details for all IDs referenced in this week
+      const allIds = new Set([...prevCntsIds, ...cntiIds, ...cntoIds, ...cntsIds]);
+      const bancalesMap = new Map<string, { codigo: string; cliente: string }>();
+      if (allIds.size > 0) {
+        const bancales = await prisma.bancal.findMany({
+          where: { id: { in: [...allIds] } },
+          select: { id: true, codigo: true, cliente: true },
+        });
+        bancales.forEach(b => bancalesMap.set(b.id, { codigo: b.codigo, cliente: b.cliente }));
+      }
+
+      const mapEvt = (e: { bancalId: string; lectura: Date }) => ({
+        codigo: bancalesMap.get(e.bancalId)?.codigo ?? '',
+        cliente: bancalesMap.get(e.bancalId)?.cliente ?? '',
+        lectura: e.lectura,
+      });
+
+      // --- Resumen semanal ---
       const invRealAnterior = prevCntsEvts.length;
       const invReal = cntsEvts.length;
-      const cntiIds = new Set(cntiEvts.map(e => e.bancalId));
-      const cntoIds = new Set(cntoEvts.map(e => e.bancalId));
       const invTeorico = invRealAnterior + cntiIds.size - cntoIds.size;
 
       const resumenSemana = {
@@ -120,54 +132,68 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         invTeorico,
         invReal,
         desviacion: invReal - invTeorico,
-        invRealAnteriorDetalle: prevCntsEvts.map(mapEvt),
-        cntiDetalle: cntiEvts.map(mapEvt),
-        cntoDetalle: cntoEvts.map(mapEvt),
-        invRealDetalle: cntsEvts.map(mapEvt),
+        invRealAnteriorDetalle: prevCntsEvts.map(mapEvt).sort((a, b) => a.codigo.localeCompare(b.codigo)),
+        cntiDetalle: cntiRaw.map(mapEvt),
+        cntoDetalle: cntoRaw.map(mapEvt),
+        invRealDetalle: cntsEvts.map(mapEvt).sort((a, b) => a.codigo.localeCompare(b.codigo)),
       };
 
       // --- Descuadre ---
-      // Expected: (prev CNTS ∪ CNTI this week) minus CNTO this week, not in current CNTS
-      const prevCntsIds = new Set(prevCntsEvts.map(e => e.bancalId));
-      const cntsIds = new Set(cntsEvts.map(e => e.bancalId));
       const expectedIds = new Set([...prevCntsIds, ...cntiIds]);
       for (const id of cntoIds) expectedIds.delete(id);
       const descuadreIds = [...expectedIds].filter(id => !cntsIds.has(id));
 
-      const descuadre = descuadreIds.length > 0
-        ? (await prisma.bancal.findMany({
-            where: { id: { in: descuadreIds } },
-            select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
-            orderBy: { codigo: 'asc' },
-          })).map(b => ({ ...b, motivo: prevCntsIds.has(b.id) ? 'ANTERIOR' : 'ENTRADA' as const }))
+      let descuadre: { id: string; codigo: string; cliente: string; ultimaLectura: Date | null; motivo: 'ANTERIOR' | 'ENTRADA' }[] = [];
+      if (descuadreIds.length > 0) {
+        const rows = await prisma.bancal.findMany({
+          where: { id: { in: descuadreIds } },
+          select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
+          orderBy: { codigo: 'asc' },
+        });
+        descuadre = rows.map(b => ({
+          ...b,
+          cliente: b.cliente as string,
+          motivo: prevCntsIds.has(b.id) ? 'ANTERIOR' : 'ENTRADA',
+        }));
+      }
+
+      // --- Bancales en plataforma & en riesgo ---
+      // Get all events at this platform to determine the latest type per bancal
+      const allEvts = await prisma.evento.findMany({
+        where: { plataformaId: plataforma.id },
+        select: { bancalId: true, tipo: true, lectura: true },
+        orderBy: { lectura: 'asc' }, // asc so last write = most recent
+      });
+
+      // Build latest-event-type map per bancal (last write wins)
+      const latestMap = new Map<string, { tipo: string; lectura: Date }>();
+      for (const e of allEvts) {
+        latestMap.set(e.bancalId, { tipo: e.tipo, lectura: e.lectura });
+      }
+
+      // Fetch bancal details for those IDs
+      const latestBancalIds = [...latestMap.keys()];
+      const latestBancales = latestBancalIds.length > 0
+        ? await prisma.bancal.findMany({
+            where: { id: { in: latestBancalIds } },
+            select: { id: true, codigo: true, cliente: true },
+          })
         : [];
 
-      // --- Latest event per bancal at this platform (single query) ---
-      type LatestRow = { bancalId: string; tipo: string; lectura: Date; codigo: string; cliente: string };
-      const latestAtPlatform = await prisma.$queryRaw<LatestRow[]>`
-        SELECT DISTINCT ON (e."bancalId")
-          e."bancalId",
-          e.tipo::text,
-          e.lectura,
-          b.codigo,
-          b.cliente::text
-        FROM "Evento" e
-        JOIN "Bancal" b ON b.id = e."bancalId"
-        WHERE e."plataformaId" = ${plataforma.id}
-        ORDER BY e."bancalId", e.lectura DESC
-      `;
-
-      // Bancales en plataforma: last event at this platform is NOT CNTO
-      const bancalesEnPlataforma = latestAtPlatform
-        .filter(r => r.tipo !== 'CNTO')
-        .map(r => ({ id: r.bancalId, codigo: r.codigo, cliente: r.cliente, ultimaLectura: r.lectura }))
+      const bancalesEnPlataforma = latestBancales
+        .filter(b => latestMap.get(b.id)?.tipo !== 'CNTO')
+        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string,
+          ultimaLectura: latestMap.get(b.id)?.lectura ?? null }))
         .sort((a, b) => a.codigo.localeCompare(b.codigo));
 
-      // Bancales en riesgo: still in platform (not CNTO) and last event older than threshold
-      const bancalesRiesgo = latestAtPlatform
-        .filter(r => r.tipo !== 'CNTO' && new Date(r.lectura) < threshold)
-        .map(r => ({ id: r.bancalId, codigo: r.codigo, cliente: r.cliente, ultimaLectura: r.lectura }))
-        .sort((a, b) => new Date(a.ultimaLectura).getTime() - new Date(b.ultimaLectura).getTime());
+      const bancalesRiesgo = latestBancales
+        .filter(b => {
+          const l = latestMap.get(b.id);
+          return l && l.tipo !== 'CNTO' && l.lectura < threshold;
+        })
+        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string,
+          ultimaLectura: latestMap.get(b.id)?.lectura ?? null }))
+        .sort((a, b) => (a.ultimaLectura?.getTime() ?? 0) - (b.ultimaLectura?.getTime() ?? 0));
 
       // --- Historico (last 12 weeks) ---
       const historico = [];

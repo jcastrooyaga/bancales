@@ -82,14 +82,18 @@ export const PlataformaDetalle: React.FC = () => {
   const [week, setWeek] = useState<WeekId>(initWeek);
   const [data, setData] = useState<DetalleData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<{ title: string; items: MovimientoItem[] } | null>(null);
 
   useEffect(() => {
     if (!codigo) return;
     setLoading(true);
+    setError(null);
     apiClient.get<DetalleData>(`/plataformas/${codigo}/detalle`, {
       params: { semana: `W${String(week.week).padStart(2, '0')}`, year: week.year },
-    }).then(({ data: d }) => setData(d))
+    })
+      .then(({ data: d }) => setData(d))
+      .catch(err => setError(err?.response?.data?.message ?? err?.message ?? 'Error desconocido'))
       .finally(() => setLoading(false));
   }, [codigo, week]);
 
@@ -100,6 +104,7 @@ export const PlataformaDetalle: React.FC = () => {
   });
 
   if (loading) return <div className="text-slate-500 text-sm p-6">Cargando...</div>;
+  if (error) return <div className="text-red-600 text-sm p-6">Error: {error}</div>;
   if (!data) return <div className="text-red-600 text-sm p-6">Plataforma no encontrada</div>;
 
   const { plataforma, historico, resumenSemana: r, bancalesEnPlataforma, descuadre, bancalesRiesgo } = data;
