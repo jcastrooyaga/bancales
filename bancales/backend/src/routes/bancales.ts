@@ -20,9 +20,14 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       if (cliente) where.cliente = cliente;
       if (q) where.codigo = { contains: String(q).toUpperCase() };
 
-      // Platform users are restricted to their own platform
+      // Platform users see all bancals that have had any reading at their platform
       if (req.user?.role === 'PLATAFORMA' && req.user.plataformaId) {
-        where.plataformaActualId = req.user.plataformaId;
+        const evts = await prisma.evento.findMany({
+          where: { plataformaId: req.user.plataformaId },
+          select: { bancalId: true },
+          distinct: ['bancalId'],
+        });
+        where.id = { in: evts.map(e => e.bancalId) };
       } else if (plataforma) {
         const p = await prisma.plataforma.findUnique({ where: { codigo: String(plataforma) } });
         if (p) where.plataformaActualId = p.id;
@@ -39,7 +44,6 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
         where,
         include: { plataformaActual: { select: { codigo: true, nombre: true } } },
         orderBy: { codigo: 'asc' },
-        take: 500,
       });
 
       const now = Date.now();
