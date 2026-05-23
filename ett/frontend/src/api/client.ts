@@ -1,0 +1,32 @@
+import axios from 'axios';
+
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
+
+export const apiClient = axios.create({ baseURL: BASE_URL });
+export const ettApiClient = axios.create({ baseURL: BASE_URL });
+
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+ettApiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('ettToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+apiClient.interceptors.response.use(
+  r => r,
+  err => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(err);
+  }
+);

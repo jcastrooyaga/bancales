@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  REQUESTER
+  VALIDATOR
+  SUPERVALIDATOR
+  READONLY
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_VALIDATION
+  APPROVED
+  REJECTED
+  RETURNED
+  CANCELLED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  SUBMIT
+  APPROVE
+  REJECT
+  RETURN
+  CANCEL
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  roles         UserRole[]
+  requests      Request[]
+  auditLogs     AuditLog[]
+  validationStepsAsValidator ValidationStep[] @relation("ValidatorSteps")
+  validationStepsAsBackup    ValidationStep[] @relation("BackupSteps")
+
+  @@map("users")
+}
+
+model UserRole {
+  id         String   @id @default(cuid())
+  userId     String
+  role       Role
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+model EttUser {
+  id           String    @id @default(cuid())
+  ettId        String
+  email        String    @unique
+  name         String
+  passwordHash String
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  ett          Ett       @relation(fields: [ettId], references: [id])
+
+  @@map("ett_users")
+}
+
+model Workplace {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  address   String?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  requests  Request[]
+
+  @@map("workplaces")
+}
+
+model ContractType {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  requests    Request[]
+
+  @@map("contract_types")
+}
+
+model JobCategory {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  requests    Request[]
+
+  @@map("job_categories")
+}
+
+model RequestReason {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  requests    Request[]
+
+  @@map("request_reasons")
+}
+
+model Shift {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  requests    Request[]
+
+  @@map("shifts")
+}
+
+model Ett {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  name         String
+  contactEmail String?
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  ettUsers     EttUser[]
+  emailRouting EttEmailRouting[]
+  requests     Request[]
+
+  @@map("etts")
+}
+
+model EttEmailRouting {
+  id        String   @id @default(cuid())
+  ettId     String
+  email     String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  ett       Ett      @relation(fields: [ettId], references: [id])
+
+  @@map("ett_email_routing")
+}
+
+model ValidationCircuit {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  steps       ValidationStep[]
+  requests    Request[]
+
+  @@map("validation_circuits")
+}
+
+model ValidationStep {
+  id              String   @id @default(cuid())
+  circuitId       String
+  order           Int
+  validatorId     String
+  backupId        String?
+  timeoutHours    Int      @default(48)
+  createdAt       DateTime @default(now())
+
+  circuit         ValidationCircuit @relation(fields: [circuitId], references: [id])
+  validator       User              @relation("ValidatorSteps", fields: [validatorId], references: [id])
+  backup          User?             @relation("BackupSteps", fields: [backupId], references: [id])
+
+  @@unique([circuitId, order])
+  @@map("validation_steps")
+}
+
+model Request {
+  id               String        @id @default(cuid())
+  code             String        @unique
+  requesterId      String
+  workplaceId      String
+  ettId            String
+  contractTypeId   String
+  jobCategoryId    String
+  requestReasonId  String
+  shiftId          String
+  circuitId        String?
+  status           RequestStatus @default(DRAFT)
+  startDate        DateTime
+  endDate          DateTime?
+  headcount        Int           @default(1)
+  notes            String?
+  rejectionReason  String?
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  rejectedAt       DateTime?
+  currentStep      Int?
+  isRenewal        Boolean       @default(false)
+  originalRequestId String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  requester        User              @relation(fields: [requesterId], references: [id])
+  workplace        Workplace         @relation(fields: [workplaceId], references: [id])
+  ett              Ett               @relation(fields: [ettId], references: [id])
+  contractType     ContractType      @relation(fields: [contractTypeId], references: [id])
+  jobCategory      JobCategory       @relation(fields: [jobCategoryId], references: [id])
+  requestReason    RequestReason     @relation(fields: [requestReasonId], references: [id])
+  shift            Shift             @relation(fields: [shiftId], references: [id])
+  circuit          ValidationCircuit? @relation(fields: [circuitId], references: [id])
+  validationStates RequestValidationState[]
+
+  @@map("requests")
+}
+
+model RequestValidationState {
+  id          String    @id @default(cuid())
+  requestId   String
+  step        Int
+  validatorId String?
+  action      String?
+  comment     String?
+  actionAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  request     Request   @relation(fields: [requestId], references: [id])
+
+  @@map("request_validation_states")
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String?
+  action     AuditAction
+  entity     String
+  entityId   String?
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  user       User?       @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}

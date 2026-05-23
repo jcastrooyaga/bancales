@@ -1,0 +1,35 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { PrismaClient } from '@prisma/client';
+import { authenticate } from './middleware/auth';
+import { errorHandler } from './middleware/errorHandler';
+import { createAuthRouter } from './routes/auth';
+import { createDashboardRouter } from './routes/dashboard';
+import { createPlataformasRouter } from './routes/plataformas';
+import { createBancalesRouter } from './routes/bancales';
+import { createEventosRouter } from './routes/eventos';
+import { createImportarRouter } from './routes/importar';
+import { createConfiguracionRouter } from './routes/configuracion';
+
+export const createApp = (prisma: PrismaClient) => {
+  const app = express();
+
+  app.use(helmet());
+  app.use(cors({ origin: '*', credentials: true }));
+  app.use(express.json());
+
+  app.get('/api/health', (_req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+
+  app.use('/api/auth', createAuthRouter());
+  app.use('/api/dashboard', authenticate, createDashboardRouter(prisma));
+  app.use('/api/plataformas', authenticate, createPlataformasRouter(prisma));
+  app.use('/api/bancales', authenticate, createBancalesRouter(prisma));
+  app.use('/api/eventos', authenticate, createEventosRouter(prisma));
+  app.use('/api/importar', authenticate, createImportarRouter(prisma));
+  app.use('/api/configuracion', authenticate, createConfiguracionRouter(prisma));
+
+  app.use(errorHandler);
+
+  return app;
+};

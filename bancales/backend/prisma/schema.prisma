@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Cliente {
+  MICHELIN
+  CONTINENTAL
+}
+
+enum TipoEvento {
+  CNTI
+  CNTO
+  CNTS
+}
+
+enum FuenteEvento {
+  IMPORTACION
+  MANUAL
+}
+
+enum Pais {
+  ES
+  PT
+}
+
+model Bancal {
+  id                 String     @id @default(cuid())
+  codigo             String     @unique
+  cliente            Cliente
+  plataformaActualId String?
+  ultimaLectura      DateTime?
+  activo             Boolean    @default(true)
+  createdAt          DateTime   @default(now())
+
+  plataformaActual   Plataforma? @relation(fields: [plataformaActualId], references: [id])
+  eventos            Evento[]
+
+  @@map("bancales")
+}
+
+model Plataforma {
+  id        String   @id @default(cuid())
+  codigo    String   @unique
+  nombre    String
+  pais      Pais
+  activa    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  bancalesActuales Bancal[]
+  eventos          Evento[]
+
+  @@map("plataformas")
+}
+
+model Evento {
+  id           String       @id @default(cuid())
+  bancalId     String
+  plataformaId String
+  tipo         TipoEvento
+  lectura      DateTime
+  usuario      String
+  fuente       FuenteEvento
+  createdAt    DateTime     @default(now())
+
+  bancal       Bancal       @relation(fields: [bancalId], references: [id])
+  plataforma   Plataforma   @relation(fields: [plataformaId], references: [id])
+
+  @@index([plataformaId, tipo, lectura])
+  @@index([bancalId, lectura])
+  @@map("eventos")
+}
+
+model Configuracion {
+  id        String   @id @default(cuid())
+  clave     String   @unique
+  valor     String
+  updatedAt DateTime @updatedAt
+
+  @@map("configuracion")
+}
