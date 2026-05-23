@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 
+type VaciarStep = 'idle' | 'confirm1' | 'confirm2';
+
 export const Configuracion: React.FC = () => {
   const [umbral, setUmbral] = useState('4');
   const [ventana, setVentana] = useState('180');
@@ -8,6 +10,11 @@ export const Configuracion: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
   const [error, setError] = useState('');
+  const [vaciarStep, setVaciarStep] = useState<VaciarStep>('idle');
+  const [confirmText, setConfirmText] = useState('');
+  const [vaciarLoading, setVaciarLoading] = useState(false);
+  const [vaciarOk, setVaciarOk] = useState(false);
+  const [vaciarError, setVaciarError] = useState('');
 
   useEffect(() => {
     apiClient.get('/configuracion').then(({ data }) => {
@@ -32,6 +39,27 @@ export const Configuracion: React.FC = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleVaciar = async () => {
+    setVaciarLoading(true);
+    setVaciarError('');
+    try {
+      await apiClient.delete('/configuracion/vaciar-bd');
+      setVaciarOk(true);
+      setVaciarStep('idle');
+      setConfirmText('');
+    } catch {
+      setVaciarError('Error al vaciar la base de datos');
+    } finally {
+      setVaciarLoading(false);
+    }
+  };
+
+  const cancelVaciar = () => {
+    setVaciarStep('idle');
+    setConfirmText('');
+    setVaciarError('');
   };
 
   if (loading) return <div className="text-slate-500 text-sm">Cargando...</div>;
@@ -82,6 +110,78 @@ export const Configuracion: React.FC = () => {
           {saving ? 'Guardando...' : 'Guardar'}
         </button>
       </form>
+      {/* Zona peligrosa */}
+      <div className="mt-8 bg-white rounded-xl border border-red-200 p-6">
+        <h2 className="text-sm font-semibold text-red-700 mb-1">Zona peligrosa</h2>
+        <p className="text-xs text-slate-500 mb-4">
+          Elimina todos los bancales y eventos de la base de datos. Esta acción es irreversible.
+        </p>
+
+        {vaciarOk && <p className="text-green-600 text-sm mb-3">Base de datos vaciada correctamente.</p>}
+        {vaciarError && <p className="text-red-600 text-sm mb-3">{vaciarError}</p>}
+
+        {vaciarStep === 'idle' && (
+          <button
+            onClick={() => setVaciarStep('confirm1')}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            Vaciar base de datos
+          </button>
+        )}
+
+        {vaciarStep === 'confirm1' && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-slate-700">
+              ¿Seguro que quieres eliminar todos los bancales y eventos? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setVaciarStep('confirm2'); setConfirmText(''); }}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                Sí, continuar
+              </button>
+              <button
+                onClick={cancelVaciar}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {vaciarStep === 'confirm2' && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-slate-700">
+              Escribe <strong>eliminar</strong> para confirmar:
+            </p>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={e => setConfirmText(e.target.value)}
+              placeholder="eliminar"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 w-48"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleVaciar}
+                disabled={confirmText !== 'eliminar' || vaciarLoading}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40"
+              >
+                {vaciarLoading ? 'Eliminando...' : 'Eliminar todo'}
+              </button>
+              <button
+                onClick={cancelVaciar}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

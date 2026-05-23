@@ -14,6 +14,14 @@ export const createConfiguracionRouter = (prisma: PrismaClient) => {
     } catch (err) { next(err); }
   });
 
+  router.delete('/vaciar-bd', async (_req, res, next) => {
+    try {
+      await prisma.evento.deleteMany();
+      await prisma.bancal.deleteMany();
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
   router.put('/', async (req, res, next) => {
     try {
       const { umbral_bancal_perdido_semanas, ventana_deduplicacion_minutos } = req.body;
