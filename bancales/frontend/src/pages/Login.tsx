@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import logoUrl from '../../logo_cat.jpg';
 
 export const Login: React.FC = () => {
   const { login, loading } = useAuth();
@@ -24,7 +25,7 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-brand flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8">
         <div className="flex flex-col items-center mb-8">
-          <img src="/logo_cat.jpg" alt="CAT SA" className="h-20 w-20 mb-4 object-contain" />
+          <img src={logoUrl} alt="CAT SA" className="h-20 w-20 mb-4 object-contain" />
           <h1 className="text-xl font-bold text-slate-800 text-center leading-tight">
             Control Contenedores<br />de Transporte
           </h1>
