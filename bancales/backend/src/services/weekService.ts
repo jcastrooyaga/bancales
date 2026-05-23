@@ -121,14 +121,19 @@ export async function calcInventarioTeorico(
 
   const clienteFilter = cliente ? { bancal: { cliente } } : {};
 
-  const cntiCount = await prisma.evento.count({
+  // Distinct bancal IDs, consistent with calcInventarioReal (distinct CNTS)
+  const cntiEvts = await prisma.evento.findMany({
     where: { plataformaId, tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, ...clienteFilter },
+    select: { bancalId: true },
+    distinct: ['bancalId'],
   });
-  const cntoCount = await prisma.evento.count({
+  const cntoEvts = await prisma.evento.findMany({
     where: { plataformaId, tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, ...clienteFilter },
+    select: { bancalId: true },
+    distinct: ['bancalId'],
   });
 
-  return inventarioRealPrev + cntiCount - cntoCount;
+  return inventarioRealPrev + cntiEvts.length - cntoEvts.length;
 }
 
 export async function getBancalesEnRiesgo(

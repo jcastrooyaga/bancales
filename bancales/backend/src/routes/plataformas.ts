@@ -4,13 +4,11 @@ import { createError } from '../middleware/errorHandler';
 import {
   calcInventarioReal,
   calcInventarioTeorico,
-  getBancalesEnRiesgo,
   parseWeekParam,
   currentWeek,
   previousWeek,
   formatWeek,
-  getMondayOfWeek,
-  isoWeekOf,
+  getWeekBounds,
 } from '../services/weekService';
 
 export const createPlataformasRouter = (prisma: PrismaClient) => {
@@ -59,44 +57,122 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
 
       const cfgUmbral = await prisma.configuracion.findUnique({ where: { clave: 'umbral_bancal_perdido_semanas' } });
       const umbral = parseInt(cfgUmbral?.valor ?? '4');
+      const threshold = new Date();
+      threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
 
-      // Build historico for last 12 weeks
+      // Week bounds for current and previous week
+      const bounds = getWeekBounds(w.year, w.week);
+      const prevW = previousWeek(w);
+      const prevBounds = getWeekBounds(prevW.year, prevW.week);
+
+      // --- Resumen semanal ---
+      type EvtRow = { bancalId: string; lectura: Date; bancal: { codigo: string; cliente: string } };
+      const mapEvt = (e: EvtRow) => ({ codigo: e.bancal.codigo, cliente: e.bancal.cliente, lectura: e.lectura });
+
+      const [prevCntsEvts, cntiEvts, cntoEvts, cntsEvts] = await Promise.all([
+        // Previous week CNTS (distinct bancals)
+        prisma.evento.findMany({
+          where: { plataformaId: plataforma.id, tipo: 'CNTS',
+            lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd } },
+          include: { bancal: { select: { codigo: true, cliente: true } } },
+          distinct: ['bancalId'], orderBy: { bancal: { codigo: 'asc' } },
+        }),
+        // CNTI this week (all events, used for detail list)
+        prisma.evento.findMany({
+          where: { plataformaId: plataforma.id, tipo: 'CNTI',
+            lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd } },
+          include: { bancal: { select: { codigo: true, cliente: true } } },
+          orderBy: { lectura: 'asc' },
+        }),
+        // CNTO this week
+        prisma.evento.findMany({
+          where: { plataformaId: plataforma.id, tipo: 'CNTO',
+            lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd } },
+          include: { bancal: { select: { codigo: true, cliente: true } } },
+          orderBy: { lectura: 'asc' },
+        }),
+        // Current week CNTS (distinct bancals)
+        prisma.evento.findMany({
+          where: { plataformaId: plataforma.id, tipo: 'CNTS',
+            lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd } },
+          include: { bancal: { select: { codigo: true, cliente: true } } },
+          distinct: ['bancalId'], orderBy: { bancal: { codigo: 'asc' } },
+        }),
+      ]);
+
+      const invRealAnterior = prevCntsEvts.length;
+      const invReal = cntsEvts.length;
+      const cntiIds = new Set(cntiEvts.map(e => e.bancalId));
+      const cntoIds = new Set(cntoEvts.map(e => e.bancalId));
+      const invTeorico = invRealAnterior + cntiIds.size - cntoIds.size;
+
+      const resumenSemana = {
+        invRealAnterior,
+        cntiCount: cntiIds.size,
+        cntoCount: cntoIds.size,
+        invTeorico,
+        invReal,
+        desviacion: invReal - invTeorico,
+        invRealAnteriorDetalle: prevCntsEvts.map(mapEvt),
+        cntiDetalle: cntiEvts.map(mapEvt),
+        cntoDetalle: cntoEvts.map(mapEvt),
+        invRealDetalle: cntsEvts.map(mapEvt),
+      };
+
+      // --- Descuadre ---
+      // Expected: (prev CNTS ∪ CNTI this week) minus CNTO this week, not in current CNTS
+      const prevCntsIds = new Set(prevCntsEvts.map(e => e.bancalId));
+      const cntsIds = new Set(cntsEvts.map(e => e.bancalId));
+      const expectedIds = new Set([...prevCntsIds, ...cntiIds]);
+      for (const id of cntoIds) expectedIds.delete(id);
+      const descuadreIds = [...expectedIds].filter(id => !cntsIds.has(id));
+
+      const descuadre = descuadreIds.length > 0
+        ? (await prisma.bancal.findMany({
+            where: { id: { in: descuadreIds } },
+            select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
+            orderBy: { codigo: 'asc' },
+          })).map(b => ({ ...b, motivo: prevCntsIds.has(b.id) ? 'ANTERIOR' : 'ENTRADA' as const }))
+        : [];
+
+      // --- Latest event per bancal at this platform (single query) ---
+      type LatestRow = { bancalId: string; tipo: string; lectura: Date; codigo: string; cliente: string };
+      const latestAtPlatform = await prisma.$queryRaw<LatestRow[]>`
+        SELECT DISTINCT ON (e."bancalId")
+          e."bancalId",
+          e.tipo::text,
+          e.lectura,
+          b.codigo,
+          b.cliente::text
+        FROM "Evento" e
+        JOIN "Bancal" b ON b.id = e."bancalId"
+        WHERE e."plataformaId" = ${plataforma.id}
+        ORDER BY e."bancalId", e.lectura DESC
+      `;
+
+      // Bancales en plataforma: last event at this platform is NOT CNTO
+      const bancalesEnPlataforma = latestAtPlatform
+        .filter(r => r.tipo !== 'CNTO')
+        .map(r => ({ id: r.bancalId, codigo: r.codigo, cliente: r.cliente, ultimaLectura: r.lectura }))
+        .sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+      // Bancales en riesgo: still in platform (not CNTO) and last event older than threshold
+      const bancalesRiesgo = latestAtPlatform
+        .filter(r => r.tipo !== 'CNTO' && new Date(r.lectura) < threshold)
+        .map(r => ({ id: r.bancalId, codigo: r.codigo, cliente: r.cliente, ultimaLectura: r.lectura }))
+        .sort((a, b) => new Date(a.ultimaLectura).getTime() - new Date(b.ultimaLectura).getTime());
+
+      // --- Historico (last 12 weeks) ---
       const historico = [];
       let cur = w;
       for (let i = 0; i < 12; i++) {
         const real = await calcInventarioReal(prisma, plataforma.id, cur.year, cur.week);
         const teorico = await calcInventarioTeorico(prisma, plataforma.id, cur.year, cur.week);
-        historico.unshift({
-          semana: formatWeek(cur),
-          year: cur.year,
-          real,
-          teorico,
-          desviacion: real - teorico,
-        });
+        historico.unshift({ semana: formatWeek(cur), year: cur.year, real, teorico, desviacion: real - teorico });
         cur = previousWeek(cur);
       }
 
-      // Bancales actualmente en esta plataforma
-      const bancalesActuales = await prisma.bancal.findMany({
-        where: { plataformaActualId: plataforma.id, activo: true },
-        select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
-        orderBy: { codigo: 'asc' },
-      });
-
-      // Bancales en riesgo
-      const threshold = new Date();
-      threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
-      const bancalesRiesgo = await prisma.bancal.findMany({
-        where: {
-          plataformaActualId: plataforma.id,
-          activo: true,
-          ultimaLectura: { lt: threshold },
-        },
-        select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
-        orderBy: { ultimaLectura: 'asc' },
-      });
-
-      res.json({ plataforma, historico, bancalesActuales, bancalesRiesgo });
+      res.json({ plataforma, historico, resumenSemana, bancalesEnPlataforma, descuadre, bancalesRiesgo });
     } catch (err) { next(err); }
   });
 

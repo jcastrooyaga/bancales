@@ -65,3 +65,42 @@ export interface ImportResult {
   duplicados: number;
   errores: { fila: number; motivo: string }[];
 }
+
+export interface MovimientoItem {
+  codigo: string;
+  cliente: string;
+  lectura: string;
+}
+
+export interface ResumenSemana {
+  invRealAnterior: number;
+  cntiCount: number;
+  cntoCount: number;
+  invTeorico: number;
+  invReal: number;
+  desviacion: number;
+  invRealAnteriorDetalle: MovimientoItem[];
+  cntiDetalle: MovimientoItem[];
+  cntoDetalle: MovimientoItem[];
+  invRealDetalle: MovimientoItem[];
+}
+
+export interface BancalSimple {
+  id: string;
+  codigo: string;
+  cliente: Cliente;
+  ultimaLectura: string | null;
+}
+
+export interface BancalDescuadre extends BancalSimple {
+  motivo: 'ANTERIOR' | 'ENTRADA';
+}
+
+export interface DetalleData {
+  plataforma: Plataforma;
+  historico: { semana: string; year: number; real: number; teorico: number; desviacion: number }[];
+  resumenSemana: ResumenSemana;
+  bancalesEnPlataforma: BancalSimple[];
+  descuadre: BancalDescuadre[];
+  bancalesRiesgo: BancalSimple[];
+}
