@@ -6,10 +6,28 @@ import {
   parseWeekParam,
   currentWeek,
   formatWeek,
+  isoWeekOf,
 } from '../services/weekService';
 
 export const createDashboardRouter = (prisma: PrismaClient) => {
   const router = Router();
+
+  // Returns the ISO week of the most recent CNTS event, or current week if no data
+  router.get('/ultima-semana', async (_req, res, next) => {
+    try {
+      const lastCnts = await prisma.evento.findFirst({
+        where: { tipo: 'CNTS' },
+        orderBy: { lectura: 'desc' },
+        select: { lectura: true },
+      });
+      if (!lastCnts) {
+        const cw = currentWeek();
+        return res.json({ week: cw.week, year: cw.year });
+      }
+      const w = isoWeekOf(lastCnts.lectura);
+      res.json({ week: w.week, year: w.year });
+    } catch (err) { next(err); }
+  });
 
   router.get('/', async (req, res, next) => {
     try {

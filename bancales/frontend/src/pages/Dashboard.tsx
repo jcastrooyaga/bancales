@@ -14,7 +14,7 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initWeek = (): WeekId => {
+  const getUrlWeek = (): WeekId | null => {
     const s = searchParams.get('semana');
     const y = searchParams.get('year');
     if (s && y) {
@@ -22,13 +22,24 @@ export const Dashboard: React.FC = () => {
       const yr = parseInt(y);
       if (!isNaN(w) && !isNaN(yr)) return { week: w, year: yr };
     }
-    return currentWeek();
+    return null;
   };
 
-  const [week, setWeek] = useState<WeekId>(initWeek);
+  const urlWeek = getUrlWeek();
+  const [week, setWeek] = useState<WeekId>(urlWeek ?? currentWeek());
   const [cliente, setCliente] = useState(searchParams.get('cliente') ?? 'TODOS');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [weekReady, setWeekReady] = useState(!!urlWeek);
+
+  // On first load without URL params, navigate to the last week with CNTS data
+  useEffect(() => {
+    if (urlWeek) return;
+    apiClient.get<{ week: number; year: number }>('/dashboard/ultima-semana')
+      .then(({ data: d }) => setWeek({ week: d.week, year: d.year }))
+      .catch(() => {})
+      .finally(() => setWeekReady(true));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDashboard = useCallback(async (w: WeekId, c: string) => {
     setLoading(true);
@@ -43,9 +54,10 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!weekReady) return;
     setSearchParams({ semana: `W${String(week.week).padStart(2, '0')}`, year: String(week.year), cliente });
     fetchDashboard(week, cliente);
-  }, [week, cliente, fetchDashboard]);
+  }, [week, cliente, weekReady, fetchDashboard]);
 
   return (
     <div>
