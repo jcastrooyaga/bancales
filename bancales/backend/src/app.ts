@@ -11,6 +11,7 @@ import { createBancalesRouter } from './routes/bancales';
 import { createEventosRouter } from './routes/eventos';
 import { createImportarRouter } from './routes/importar';
 import { createConfiguracionRouter } from './routes/configuracion';
+import { createHistoricoRouter } from './routes/historico';
 
 export const createApp = (prisma: PrismaClient) => {
   const app = express();
@@ -28,6 +29,7 @@ export const createApp = (prisma: PrismaClient) => {
   app.use('/api/eventos', authenticate, requireAdmin, createEventosRouter(prisma));
   app.use('/api/importar', authenticate, requireAdmin, createImportarRouter(prisma));
   app.use('/api/configuracion', authenticate, requireAdmin, createConfiguracionRouter(prisma));
+  app.use('/api/historico', authenticate, createHistoricoRouter(prisma));
 
   app.use(errorHandler);
 

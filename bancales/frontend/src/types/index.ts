@@ -93,6 +93,18 @@ export interface BancalSimple {
   ultimoTipo?: TipoEvento | null;
 }
 
+export interface HistoricoItem {
+  id: string;
+  fecha: string;
+  codigo: string;
+  cliente: Cliente;
+  evento: TipoEvento;
+  usuario: string;
+  estado: string;
+  plataforma: string;
+  plataformaNombre: string;
+}
+
 export interface BancalDescuadre extends BancalSimple {
   motivo: 'ANTERIOR' | 'ENTRADA';
 }

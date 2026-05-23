@@ -5,6 +5,7 @@ import logoUrl from '../../logo_cat.jpg';
 
 const adminNavItems = [
   { path: '/', label: 'Dashboard' },
+  { path: '/historico', label: 'Histórico' },
   { path: '/bancales', label: 'Bancales' },
   { path: '/importar', label: 'Importar Excel' },
   { path: '/registro-manual', label: 'Registro Manual' },
@@ -14,6 +15,7 @@ const adminNavItems = [
 
 const plataformaNavItems = [
   { path: '/mi-plataforma', label: 'Mi Plataforma' },
+  { path: '/historico', label: 'Histórico' },
   { path: '/bancales', label: 'Bancales' },
   { path: '/configuracion', label: 'Configuración' },
 ];
