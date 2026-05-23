@@ -227,9 +227,6 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
             </div>
           ))}
         </div>
-        <p className="text-xs text-slate-400 mt-3">
-          Inv. anterior + Entradas − Salidas = <strong>{r.invRealAnterior} + {r.cntiCount} − {r.cntoCount} = {r.invTeorico}</strong> teórico
-        </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -239,7 +236,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
             <h2 className="font-semibold text-slate-700 text-sm">
               Bancales en plataforma ({bancalesEnPlataforma.length})
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Con CNTI sin CNTO posterior</p>
+            <p className="text-xs text-slate-400 mt-0.5">Esperados en plataforma en la semana actual</p>
           </div>
           <div className="max-h-64 overflow-y-auto divide-y flex-1">
             {bancalesEnPlataforma.length === 0 && <p className="px-4 py-3 text-slate-400 text-sm">Sin bancales</p>}
@@ -255,7 +252,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
             <h2 className="font-semibold text-slate-700 text-sm">
               Descuadre de la semana ({descuadre.length})
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Esperados pero no inventariados con CNTS</p>
+            <p className="text-xs text-slate-400 mt-0.5">Esperados pero no inventariados</p>
           </div>
           <div className="max-h-64 overflow-y-auto divide-y flex-1">
             {descuadre.length === 0 && <p className="px-4 py-3 text-slate-400 text-sm">Sin descuadre</p>}
@@ -282,7 +279,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
             <h2 className="font-semibold text-slate-700 text-sm">
               Bancales sobrantes ({sobrantes.length})
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Inventariados con CNTS pero no esperados esta semana</p>
+            <p className="text-xs text-slate-400 mt-0.5">Inventariados pero no esperados</p>
           </div>
           <div className="max-h-64 overflow-y-auto divide-y flex-1">
             {sobrantes.map(b => (
@@ -298,7 +295,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
           <h2 className="font-semibold text-slate-700 text-sm">
             Bancales en riesgo de pérdida ({bancalesRiesgo.length})
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">Sin movimiento en más de {umbral ?? '—'} semanas, sin CNTO</p>
+          <p className="text-xs text-slate-400 mt-0.5">Sin movimiento en más de {umbral ?? '—'} semanas</p>
         </div>
         <div className="max-h-64 overflow-y-auto divide-y text-sm">
           {bancalesRiesgo.length === 0 && <p className="px-4 py-3 text-slate-400">Ninguno</p>}
