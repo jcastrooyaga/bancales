@@ -175,9 +175,11 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         orderBy: { codigo: 'asc' },
       });
 
-      // En plataforma: global last event is here AND that event is not CNTO
+      // En plataforma: global last event is here, not CNTO, and on/after prev week's inventory Thursday
+      // Bancals last seen before the previous CNTS Thursday are considered absent
       const bancalesEnPlataforma = candidatos
-        .filter(b => latestHereMap.get(b.id) !== 'CNTO')
+        .filter(b => latestHereMap.get(b.id) !== 'CNTO'
+          && b.ultimaLectura !== null && b.ultimaLectura >= prevBounds.cntsStart)
         .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }));
 
       // En riesgo: in platform (as above) AND no activity anywhere within umbral period
