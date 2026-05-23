@@ -28,6 +28,11 @@ enum Pais {
   PT
 }
 
+enum Rol {
+  ADMIN
+  PLATAFORMA
+}
+
 model Bancal {
   id                 String     @id @default(cuid())
   codigo             String     @unique
@@ -53,8 +58,22 @@ model Plataforma {
 
   bancalesActuales Bancal[]
   eventos          Evento[]
+  usuario          Usuario?
 
   @@map("plataformas")
+}
+
+model Usuario {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  role         Rol        @default(PLATAFORMA)
+  plataformaId String?    @unique
+  plataforma   Plataforma? @relation(fields: [plataformaId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("usuarios")
 }
 
 model Evento {

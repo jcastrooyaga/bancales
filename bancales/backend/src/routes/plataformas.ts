@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { createError } from '../middleware/errorHandler';
+import { requireAdmin } from '../middleware/auth';
 import {
   calcInventarioReal,
   calcInventarioTeorico,
@@ -21,7 +23,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
     } catch (err) { next(err); }
   });
 
-  router.post('/', async (req, res, next) => {
+  router.post('/', requireAdmin, async (req, res, next) => {
     try {
       const { codigo, nombre, pais } = req.body;
       if (!codigo || !nombre || !pais) throw createError(400, 'Faltan campos requeridos');
@@ -31,11 +33,15 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const p = await prisma.plataforma.create({
         data: { codigo: codigo.toUpperCase(), nombre, pais },
       });
+      const passwordHash = await bcrypt.hash(p.codigo, 10);
+      await prisma.usuario.create({
+        data: { username: p.codigo, passwordHash, role: 'PLATAFORMA', plataformaId: p.id },
+      });
       res.status(201).json(p);
     } catch (err) { next(err); }
   });
 
-  router.put('/:id', async (req, res, next) => {
+  router.put('/:id', requireAdmin, async (req, res, next) => {
     try {
       const { nombre, activa } = req.body;
       const update: Record<string, unknown> = {};
@@ -46,6 +52,19 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
     } catch (err) { next(err); }
   });
 
+  router.put('/:codigo/password', requireAdmin, async (req, res, next) => {
+    try {
+      const { password } = req.body;
+      if (!password || String(password).length < 4) throw createError(400, 'La contraseña debe tener al menos 4 caracteres');
+      const plataforma = await prisma.plataforma.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });
+      if (!plataforma) throw createError(404, 'Plataforma no encontrada');
+      const hash = await bcrypt.hash(String(password), 10);
+      await prisma.usuario.update({ where: { plataformaId: plataforma.id }, data: { passwordHash: hash } });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  // Auto-create user when a new platform is created (handled in POST above via afterCreate hook)
   router.get('/:codigo/detalle', async (req, res, next) => {
     try {
       const plataforma = await prisma.plataforma.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });

@@ -2,12 +2,18 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const navItems = [
+const adminNavItems = [
   { path: '/', label: 'Dashboard' },
   { path: '/bancales', label: 'Bancales' },
   { path: '/importar', label: 'Importar Excel' },
   { path: '/registro-manual', label: 'Registro Manual' },
   { path: '/plataformas', label: 'Plataformas' },
+  { path: '/configuracion', label: 'Configuración' },
+];
+
+const plataformaNavItems = [
+  { path: '/mi-plataforma', label: 'Mi Plataforma' },
+  { path: '/bancales', label: 'Bancales' },
   { path: '/configuracion', label: 'Configuración' },
 ];
 
@@ -18,6 +24,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => { logout(); navigate('/login'); };
+
+  const navItems = user?.role === 'PLATAFORMA' ? plataformaNavItems : adminNavItems;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -47,6 +55,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </nav>
         <div className="absolute bottom-0 w-full p-4 border-t border-slate-700">
           <p className="text-xs text-slate-400 truncate">{user?.username}</p>
+          {user?.role === 'PLATAFORMA' && (
+            <p className="text-xs text-slate-500 truncate">Plataforma</p>
+          )}
           <button
             onClick={handleLogout}
             className="mt-2 w-full text-xs bg-slate-700 hover:bg-slate-600 text-white py-1.5 px-3 rounded"

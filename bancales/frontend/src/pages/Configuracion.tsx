@@ -1,27 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
+import { useAuth } from '../contexts/AuthContext';
 
 type VaciarStep = 'idle' | 'confirm1' | 'confirm2';
 
 export const Configuracion: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
+  // Admin: system params
   const [umbral, setUmbral] = useState('4');
   const [ventana, setVentana] = useState('180');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isAdmin);
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
   const [error, setError] = useState('');
+
+  // Danger zone
   const [vaciarStep, setVaciarStep] = useState<VaciarStep>('idle');
   const [confirmText, setConfirmText] = useState('');
   const [vaciarLoading, setVaciarLoading] = useState(false);
   const [vaciarOk, setVaciarOk] = useState(false);
   const [vaciarError, setVaciarError] = useState('');
 
+  // Platform user: change password
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwOk, setPwOk] = useState(false);
+  const [pwError, setPwError] = useState('');
+
   useEffect(() => {
+    if (!isAdmin) return;
     apiClient.get('/configuracion').then(({ data }) => {
       setUmbral(data.umbral_bancal_perdido_semanas ?? '4');
       setVentana(data.ventana_deduplicacion_minutos ?? '180');
     }).finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,8 +77,71 @@ export const Configuracion: React.FC = () => {
     setVaciarError('');
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError('');
+    setPwOk(false);
+    if (newPassword !== confirmPassword) { setPwError('Las contraseñas no coinciden'); return; }
+    if (newPassword.length < 4) { setPwError('La contraseña debe tener al menos 4 caracteres'); return; }
+    setPwSaving(true);
+    try {
+      await apiClient.put('/auth/me/password', { password: newPassword });
+      setPwOk(true);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch {
+      setPwError('Error al cambiar la contraseña');
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
   if (loading) return <div className="text-slate-500 text-sm">Cargando...</div>;
 
+  // Platform user view: only password change
+  if (!isAdmin) {
+    return (
+      <div className="max-w-md">
+        <h1 className="text-2xl font-bold text-slate-800 mb-6">Configuración</h1>
+        <div className="bg-white rounded-xl border p-6">
+          <h2 className="text-sm font-semibold text-slate-700 mb-4">Cambiar contraseña</h2>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Nueva contraseña</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Confirmar contraseña</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                required
+              />
+            </div>
+            {pwError && <p className="text-red-600 text-sm">{pwError}</p>}
+            {pwOk && <p className="text-green-600 text-sm">Contraseña actualizada correctamente.</p>}
+            <button
+              type="submit"
+              disabled={pwSaving}
+              className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              {pwSaving ? 'Guardando...' : 'Cambiar contraseña'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Admin view: system params + danger zone
   return (
     <div className="max-w-md">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Parámetros del sistema</h1>
@@ -110,6 +188,7 @@ export const Configuracion: React.FC = () => {
           {saving ? 'Guardando...' : 'Guardar'}
         </button>
       </form>
+
       {/* Zona peligrosa */}
       <div className="mt-8 bg-white rounded-xl border border-red-200 p-6">
         <h2 className="text-sm font-semibold text-red-700 mb-1">Zona peligrosa</h2>

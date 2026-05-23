@@ -1,4 +1,5 @@
 import { PrismaClient, Pais } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const PLATAFORMAS: { codigo: string; nombre: string; pais: Pais }[] = [
   { codigo: 'ESALB', nombre: 'Albacete', pais: 'ES' },
@@ -27,28 +28,49 @@ const PLATAFORMAS: { codigo: string; nombre: string; pais: Pais }[] = [
 ];
 
 export async function runSeedIfNeeded(prisma: PrismaClient): Promise<void> {
-  const count = await prisma.plataforma.count();
-  if (count > 0) return; // already seeded
+  const platCount = await prisma.plataforma.count();
+  if (platCount === 0) {
+    console.log('Running initial seed...');
+    for (const p of PLATAFORMAS) {
+      await prisma.plataforma.upsert({
+        where: { codigo: p.codigo },
+        update: {},
+        create: p,
+      });
+    }
 
-  console.log('Running initial seed...');
-  for (const p of PLATAFORMAS) {
-    await prisma.plataforma.upsert({
-      where: { codigo: p.codigo },
+    await prisma.configuracion.upsert({
+      where: { clave: 'umbral_bancal_perdido_semanas' },
       update: {},
-      create: p,
+      create: { clave: 'umbral_bancal_perdido_semanas', valor: '4' },
     });
+    await prisma.configuracion.upsert({
+      where: { clave: 'ventana_deduplicacion_minutos' },
+      update: {},
+      create: { clave: 'ventana_deduplicacion_minutos', valor: '180' },
+    });
+
+    console.log('Platform seed complete.');
   }
 
-  await prisma.configuracion.upsert({
-    where: { clave: 'umbral_bancal_perdido_semanas' },
-    update: {},
-    create: { clave: 'umbral_bancal_perdido_semanas', valor: '4' },
-  });
-  await prisma.configuracion.upsert({
-    where: { clave: 'ventana_deduplicacion_minutos' },
-    update: {},
-    create: { clave: 'ventana_deduplicacion_minutos', valor: '180' },
-  });
-
-  console.log('Seed complete.');
+  // Create platform users if none exist (runs on fresh install and existing DBs without users)
+  const userCount = await prisma.usuario.count();
+  if (userCount === 0) {
+    console.log('Creating platform users...');
+    const plataformas = await prisma.plataforma.findMany();
+    for (const p of plataformas) {
+      const passwordHash = await bcrypt.hash(p.codigo, 10);
+      await prisma.usuario.upsert({
+        where: { username: p.codigo },
+        update: {},
+        create: {
+          username: p.codigo,
+          passwordHash,
+          role: 'PLATAFORMA',
+          plataformaId: p.id,
+        },
+      });
+    }
+    console.log(`Created ${plataformas.length} platform users.`);
+  }
 }

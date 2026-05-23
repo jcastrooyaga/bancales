@@ -19,7 +19,11 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       const where: Record<string, unknown> = {};
       if (cliente) where.cliente = cliente;
       if (q) where.codigo = { contains: String(q).toUpperCase() };
-      if (plataforma) {
+
+      // Platform users are restricted to their own platform
+      if (req.user?.role === 'PLATAFORMA' && req.user.plataformaId) {
+        where.plataformaActualId = req.user.plataformaId;
+      } else if (plataforma) {
         const p = await prisma.plataforma.findUnique({ where: { codigo: String(plataforma) } });
         if (p) where.plataformaActualId = p.id;
       }

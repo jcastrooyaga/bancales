@@ -5,6 +5,9 @@ import { config } from '../config';
 export interface AuthPayload {
   userId: string;
   username: string;
+  role: 'ADMIN' | 'PLATAFORMA';
+  plataformaId?: string;
+  plataformaCodigo?: string;
 }
 
 declare global {
@@ -28,4 +31,11 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   } catch {
     return res.status(401).json({ error: 'Invalid token' });
   }
+};
+
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role !== 'ADMIN') {
+    return res.status(403).json({ error: 'Acceso restringido a administradores' });
+  }
+  next();
 };

@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useState } from 'react';
 import { apiClient } from '../api/client';
 
-interface User { id: string; username: string; }
+export interface User {
+  id: string;
+  username: string;
+  role: 'ADMIN' | 'PLATAFORMA';
+  plataformaCodigo?: string;
+}
 
 interface AuthContextValue {
   user: User | null;

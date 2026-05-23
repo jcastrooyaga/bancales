@@ -11,6 +11,10 @@ export const Plataformas: React.FC = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [editNombre, setEditNombre] = useState('');
   const [error, setError] = useState('');
+  const [pwCodigo, setPwCodigo] = useState<string | null>(null);
+  const [pwValue, setPwValue] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState('');
 
   const fetchPlataformas = () =>
     apiClient.get<Plataforma[]>('/plataformas').then(({ data }) => setPlataformas(data));
@@ -40,6 +44,22 @@ export const Plataformas: React.FC = () => {
     await apiClient.put(`/plataformas/${id}`, { nombre: editNombre });
     setEditId(null);
     fetchPlataformas();
+  };
+
+  const handlePwChange = async (codigo: string) => {
+    if (!pwValue || pwValue.length < 4) { setPwMsg('Mínimo 4 caracteres'); return; }
+    setPwSaving(true);
+    setPwMsg('');
+    try {
+      await apiClient.put(`/plataformas/${codigo}/password`, { password: pwValue });
+      setPwCodigo(null);
+      setPwValue('');
+      setPwMsg('');
+    } catch {
+      setPwMsg('Error al cambiar contraseña');
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   return (
@@ -102,6 +122,7 @@ export const Plataformas: React.FC = () => {
               <th className="text-left px-4 py-3 font-medium text-slate-600">Nombre</th>
               <th className="text-left px-4 py-3 font-medium text-slate-600">País</th>
               <th className="text-left px-4 py-3 font-medium text-slate-600">Estado</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600">Contraseña</th>
               <th className="text-left px-4 py-3 font-medium text-slate-600">Acciones</th>
             </tr>
           </thead>
@@ -140,6 +161,31 @@ export const Plataformas: React.FC = () => {
                   <span className={`text-xs px-2 py-0.5 rounded-full ${p.activa ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                     {p.activa ? 'Activa' : 'Inactiva'}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  {pwCodigo === p.codigo ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="password"
+                        value={pwValue}
+                        onChange={e => setPwValue(e.target.value)}
+                        placeholder="Nueva contraseña"
+                        className="border rounded px-2 py-1 text-xs w-36 focus:outline-none"
+                        autoFocus
+                        onKeyDown={e => e.key === 'Enter' && handlePwChange(p.codigo)}
+                      />
+                      <button onClick={() => handlePwChange(p.codigo)} disabled={pwSaving} className="text-green-600 text-xs font-medium">OK</button>
+                      <button onClick={() => { setPwCodigo(null); setPwValue(''); setPwMsg(''); }} className="text-slate-400 text-xs">✕</button>
+                      {pwMsg && <span className="text-red-500 text-xs">{pwMsg}</span>}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setPwCodigo(p.codigo); setPwValue(''); setPwMsg(''); }}
+                      className="text-xs text-slate-500 hover:text-slate-800 hover:underline"
+                    >
+                      Cambiar
+                    </button>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <button

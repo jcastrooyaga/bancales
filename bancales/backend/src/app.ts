@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
-import { authenticate } from './middleware/auth';
+import { authenticate, requireAdmin } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { createAuthRouter } from './routes/auth';
 import { createDashboardRouter } from './routes/dashboard';
@@ -21,13 +21,13 @@ export const createApp = (prisma: PrismaClient) => {
 
   app.get('/api/health', (_req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
 
-  app.use('/api/auth', createAuthRouter());
-  app.use('/api/dashboard', authenticate, createDashboardRouter(prisma));
+  app.use('/api/auth', createAuthRouter(prisma));
+  app.use('/api/dashboard', authenticate, requireAdmin, createDashboardRouter(prisma));
   app.use('/api/plataformas', authenticate, createPlataformasRouter(prisma));
   app.use('/api/bancales', authenticate, createBancalesRouter(prisma));
-  app.use('/api/eventos', authenticate, createEventosRouter(prisma));
-  app.use('/api/importar', authenticate, createImportarRouter(prisma));
-  app.use('/api/configuracion', authenticate, createConfiguracionRouter(prisma));
+  app.use('/api/eventos', authenticate, requireAdmin, createEventosRouter(prisma));
+  app.use('/api/importar', authenticate, requireAdmin, createImportarRouter(prisma));
+  app.use('/api/configuracion', authenticate, requireAdmin, createConfiguracionRouter(prisma));
 
   app.use(errorHandler);
 

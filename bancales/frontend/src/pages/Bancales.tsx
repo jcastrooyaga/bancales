@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { useAuth } from '../contexts/AuthContext';
 import { Bancal } from '../types';
 
 export const Bancales: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isPlataforma = user?.role === 'PLATAFORMA';
   const [bancales, setBancales] = useState<Bancal[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
@@ -29,7 +32,9 @@ export const Bancales: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Listado de bancales</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">
+        {isPlataforma ? `Bancales — ${user?.plataformaCodigo}` : 'Listado de bancales'}
+      </h1>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">

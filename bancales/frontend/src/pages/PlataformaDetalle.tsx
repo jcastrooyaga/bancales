@@ -63,8 +63,13 @@ const BancalRow: React.FC<{ b: BancalSimple; onClick: () => void; extra?: React.
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export const PlataformaDetalle: React.FC = () => {
-  const { codigo } = useParams<{ codigo: string }>();
+interface Props {
+  overrideCodigo?: string;
+}
+
+export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
+  const { codigo: paramCodigo } = useParams<{ codigo: string }>();
+  const codigo = overrideCodigo ?? paramCodigo;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -155,7 +160,9 @@ export const PlataformaDetalle: React.FC = () => {
       {modal && <MovimientosModal title={modal.title} items={modal.items} onClose={() => setModal(null)} />}
 
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">← Volver</button>
+        {!overrideCodigo && (
+          <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">← Volver</button>
+        )}
         <h1 className="text-2xl font-bold text-slate-800">{plataforma.codigo} · {plataforma.nombre}</h1>
         <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{plataforma.pais}</span>
       </div>
