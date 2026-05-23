@@ -57,14 +57,25 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
         plataformas.map(async p => {
           const real = await calcInventarioReal(prisma, p.id, w.year, w.week, cliente);
           const teorico = await calcInventarioTeorico(prisma, p.id, w.year, w.week, cliente);
-          const riesgo = await prisma.bancal.count({
+
+          // Match detail page logic: exclude bancals whose last event at this platform is CNTO
+          const allEvtsHere = await prisma.evento.findMany({
+            where: { plataformaId: p.id },
+            select: { bancalId: true, tipo: true },
+            orderBy: { lectura: 'asc' },
+          });
+          const latestHereMap = new Map<string, string>();
+          for (const e of allEvtsHere) latestHereMap.set(e.bancalId, e.tipo);
+
+          const candidatos = await prisma.bancal.findMany({
             where: {
               plataformaActualId: p.id,
-              activo: true,
               ultimaLectura: { lt: threshold },
               ...(cliente ? { cliente } : {}),
             },
+            select: { id: true },
           });
+          const riesgo = candidatos.filter(b => latestHereMap.get(b.id) !== 'CNTO').length;
           return {
             plataforma: { id: p.id, codigo: p.codigo, nombre: p.nombre, pais: p.pais },
             invReal: real,
