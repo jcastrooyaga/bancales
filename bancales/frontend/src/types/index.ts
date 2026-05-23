@@ -102,6 +102,8 @@ export interface DetalleData {
   historico: { semana: string; year: number; real: number; teorico: number; desviacion: number }[];
   resumenSemana: ResumenSemana;
   bancalesEnPlataforma: BancalSimple[];
+  sobrantes: BancalSimple[];
   descuadre: BancalDescuadre[];
   bancalesRiesgo: BancalSimple[];
+  umbral: number;
 }

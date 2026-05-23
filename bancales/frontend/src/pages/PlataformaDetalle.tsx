@@ -135,7 +135,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
   if (error) return <div className="text-red-600 text-sm p-6">Error: {error}</div>;
   if (!data) return <div className="text-red-600 text-sm p-6">Plataforma no encontrada</div>;
 
-  const { plataforma, historico, resumenSemana: r, bancalesEnPlataforma, descuadre, bancalesRiesgo } = data;
+  const { plataforma, historico, resumenSemana: r, bancalesEnPlataforma, sobrantes, descuadre, bancalesRiesgo, umbral } = data;
 
   const resumenCards = [
     {
@@ -275,13 +275,30 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
         </div>
       </div>
 
+      {/* Sobrantes */}
+      {sobrantes.length > 0 && (
+        <div className="bg-white rounded-xl border flex flex-col mb-6">
+          <div className="px-4 py-3 border-b">
+            <h2 className="font-semibold text-slate-700 text-sm">
+              Bancales sobrantes ({sobrantes.length})
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Inventariados con CNTS pero no esperados esta semana</p>
+          </div>
+          <div className="max-h-64 overflow-y-auto divide-y flex-1">
+            {sobrantes.map(b => (
+              <BancalRow key={b.id} b={b} onClick={() => navigate(`/bancales/${b.codigo}`)} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Bancales en riesgo */}
       <div className="bg-white rounded-xl border mb-6">
         <div className="px-4 py-3 border-b">
           <h2 className="font-semibold text-slate-700 text-sm">
             Bancales en riesgo de pérdida ({bancalesRiesgo.length})
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">Sin movimiento en más de {(data as any)?.umbral ?? '—'} semanas, sin CNTO</p>
+          <p className="text-xs text-slate-400 mt-0.5">Sin movimiento en más de {umbral ?? '—'} semanas, sin CNTO</p>
         </div>
         <div className="max-h-64 overflow-y-auto divide-y text-sm">
           {bancalesRiesgo.length === 0 && <p className="px-4 py-3 text-slate-400">Ninguno</p>}

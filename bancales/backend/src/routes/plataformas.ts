@@ -176,33 +176,64 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         }));
       }
 
-      // --- Bancales en plataforma & en riesgo ---
-      // Build latest-event-type map per bancal for events AT THIS platform (asc → last write wins)
+      // --- Bancales en plataforma (week-aware) ---
+      // Build a map of the most recent relevant event for each bancal within the selected week's scope:
+      // prevCnts → cnti → cnts (later event wins)
+      const bancalEvtMap = new Map<string, { tipo: string; lectura: Date }>();
+      for (const e of prevCntsEvts) {
+        bancalEvtMap.set(e.bancalId, { tipo: 'CNTS', lectura: e.lectura });
+      }
+      for (const e of cntiRaw) {
+        const cur = bancalEvtMap.get(e.bancalId);
+        if (!cur || e.lectura > cur.lectura) bancalEvtMap.set(e.bancalId, { tipo: 'CNTI', lectura: e.lectura });
+      }
+      for (const e of cntsEvts) {
+        const cur = bancalEvtMap.get(e.bancalId);
+        if (!cur || e.lectura > cur.lectura) bancalEvtMap.set(e.bancalId, { tipo: 'CNTS', lectura: e.lectura });
+      }
+
+      // En plataforma = expectedIds ∪ cntsIds (expected + confirmed, covers both descuadre and sobrantes)
+      const bancalesInPlatformIds = new Set([...expectedIds, ...cntsIds]);
+      const bancalesEnPlataforma = [...bancalesInPlatformIds].map(id => {
+        const b = bancalesMap.get(id);
+        const evt = bancalEvtMap.get(id);
+        return {
+          id,
+          codigo: b?.codigo ?? '',
+          cliente: (b?.cliente ?? '') as string,
+          ultimaLectura: evt?.lectura ?? null,
+          ultimoTipo: evt?.tipo ?? null,
+        };
+      }).sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+      // Sobrantes: confirmed by CNTS but not expected (in cnts but not in prevCnts+cnti-cnto)
+      const sobrantes = [...cntsIds].filter(id => !expectedIds.has(id)).map(id => {
+        const b = bancalesMap.get(id);
+        const evt = bancalEvtMap.get(id);
+        return {
+          id,
+          codigo: b?.codigo ?? '',
+          cliente: (b?.cliente ?? '') as string,
+          ultimaLectura: evt?.lectura ?? null,
+          ultimoTipo: 'CNTS' as string,
+        };
+      }).sort((a, b) => a.codigo.localeCompare(b.codigo));
+
+      // --- Bancales en riesgo (current global state, independent of selected week) ---
       const allEvtsHere = await prisma.evento.findMany({
         where: { plataformaId: plataforma.id },
         select: { bancalId: true, tipo: true, lectura: true },
         orderBy: { lectura: 'asc' },
       });
-      const latestHereMap = new Map<string, string>(); // bancalId → tipo of last event here
+      const latestHereMap = new Map<string, string>();
       for (const e of allEvtsHere) latestHereMap.set(e.bancalId, e.tipo);
 
-      // candidatos: bancals whose GLOBAL last event was at THIS platform
-      // (plataformaActualId guarantees the bancal has not been seen at any other platform since)
       const candidatos = await prisma.bancal.findMany({
         where: { plataformaActualId: plataforma.id },
         select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
         orderBy: { codigo: 'asc' },
       });
 
-      // En plataforma: global last event is here, not CNTO, and on/after prev week's inventory Thursday
-      // Bancals last seen before the previous CNTS Thursday are considered absent
-      const bancalesEnPlataforma = candidatos
-        .filter(b => latestHereMap.get(b.id) !== 'CNTO'
-          && b.ultimaLectura !== null && b.ultimaLectura >= prevBounds.cntsStart)
-        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura, ultimoTipo: latestHereMap.get(b.id) ?? null }));
-
-      // En riesgo: in platform (as above) AND no activity anywhere within umbral period
-      // ultimaLectura is the global last event timestamp — covers all platforms
       const bancalesRiesgo = candidatos
         .filter(b => latestHereMap.get(b.id) !== 'CNTO'
           && b.ultimaLectura !== null && b.ultimaLectura < threshold)
@@ -219,7 +250,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         cur = previousWeek(cur);
       }
 
-      res.json({ plataforma, historico, resumenSemana, bancalesEnPlataforma, descuadre, bancalesRiesgo });
+      res.json({ plataforma, historico, resumenSemana, bancalesEnPlataforma, sobrantes, descuadre, bancalesRiesgo, umbral });
     } catch (err) { next(err); }
   });
 
