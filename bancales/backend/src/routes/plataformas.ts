@@ -207,17 +207,32 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       }).sort((a, b) => a.codigo.localeCompare(b.codigo));
 
       // Sobrantes: confirmed by CNTS but not expected (in cnts but not in prevCnts+cnti-cnto)
-      const sobrantes = [...cntsIds].filter(id => !expectedIds.has(id)).map(id => {
-        const b = bancalesMap.get(id);
-        const evt = bancalEvtMap.get(id);
-        return {
-          id,
-          codigo: b?.codigo ?? '',
-          cliente: (b?.cliente ?? '') as string,
-          ultimaLectura: evt?.lectura ?? null,
-          ultimoTipo: 'CNTS' as string,
-        };
-      }).sort((a, b) => a.codigo.localeCompare(b.codigo));
+      // Exclude bancals that had any reading at a different platform during the week
+      const sobranteCandidateIds = [...cntsIds].filter(id => !expectedIds.has(id));
+      let sobrantes: { id: string; codigo: string; cliente: string; ultimaLectura: Date | null; ultimoTipo: string }[] = [];
+      if (sobranteCandidateIds.length > 0) {
+        const otherPlatEvts = await prisma.evento.findMany({
+          where: {
+            bancalId: { in: sobranteCandidateIds },
+            plataformaId: { not: plataforma.id },
+            lectura: { gte: bounds.cntiStart, lte: bounds.cntsEnd },
+          },
+          select: { bancalId: true },
+          distinct: ['bancalId'],
+        });
+        const seenElsewhere = new Set(otherPlatEvts.map(e => e.bancalId));
+        sobrantes = sobranteCandidateIds.filter(id => !seenElsewhere.has(id)).map(id => {
+          const b = bancalesMap.get(id);
+          const evt = bancalEvtMap.get(id);
+          return {
+            id,
+            codigo: b?.codigo ?? '',
+            cliente: (b?.cliente ?? '') as string,
+            ultimaLectura: evt?.lectura ?? null,
+            ultimoTipo: 'CNTS' as string,
+          };
+        }).sort((a, b) => a.codigo.localeCompare(b.codigo));
+      }
 
       // --- Bancales en riesgo (current global state, independent of selected week) ---
       const allEvtsHere = await prisma.evento.findMany({
