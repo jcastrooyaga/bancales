@@ -97,10 +97,8 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
       const totalContinental = await prisma.bancal.count({
         where: { cliente: 'CONTINENTAL', activo: true, ultimaLectura: { gte: threshold } },
       });
-      const totalRiesgo = await prisma.bancal.count({
-        where: { activo: true, ultimaLectura: { lt: threshold }, ...clienteFilter },
-      });
-      const plataformasDesviacion = filas.filter(f => f.desviacion < 0).length;
+      const plataformasDesviacion = filas.filter(f => f.desviacion !== 0).length;
+      const totalRiesgo = filas.reduce((sum, f) => sum + f.bancalesRiesgo, 0);
 
       res.json({
         semana: formatWeek(w),

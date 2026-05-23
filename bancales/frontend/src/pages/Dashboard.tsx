@@ -112,7 +112,7 @@ export const Dashboard: React.FC = () => {
                   <tr
                     key={fila.plataforma.id}
                     onClick={() => navigate(`/plataforma/${fila.plataforma.codigo}`)}
-                    className={`cursor-pointer hover:bg-gray-50 transition-colors ${fila.desviacion < 0 ? 'bg-red-50 hover:bg-red-100' : ''}`}
+                    className={`cursor-pointer hover:bg-gray-50 transition-colors ${fila.invReal === 0 ? 'bg-red-50 hover:bg-red-100' : ''}`}
                   >
                     <td className="px-4 py-3">
                       <span className="font-medium text-slate-800">{fila.plataforma.codigo}</span>
