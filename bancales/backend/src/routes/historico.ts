@@ -10,12 +10,12 @@ export const createHistoricoRouter = (prisma: PrismaClient) => {
       const desde = new Date();
       desde.setDate(desde.getDate() - dias);
 
-      const where: Parameters<typeof prisma.evento.findMany>[0]['where'] = {
+      const where: Record<string, unknown> = {
         lectura: { gte: desde },
       };
 
       if (req.user?.role === 'PLATAFORMA') {
-        if (!req.user.plataformaId) return res.json([]);
+        if (!req.user.plataformaId) { res.json([]); return; }
         where.plataformaId = req.user.plataformaId;
       } else if (req.query.plataformaId) {
         where.plataformaId = req.query.plataformaId as string;
