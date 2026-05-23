@@ -158,41 +158,34 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       }
 
       // --- Bancales en plataforma & en riesgo ---
-      // Get all events at this platform to determine the latest type per bancal
-      const allEvts = await prisma.evento.findMany({
+      // Build latest-event-type map per bancal for events AT THIS platform (asc → last write wins)
+      const allEvtsHere = await prisma.evento.findMany({
         where: { plataformaId: plataforma.id },
         select: { bancalId: true, tipo: true, lectura: true },
-        orderBy: { lectura: 'asc' }, // asc so last write = most recent
+        orderBy: { lectura: 'asc' },
+      });
+      const latestHereMap = new Map<string, string>(); // bancalId → tipo of last event here
+      for (const e of allEvtsHere) latestHereMap.set(e.bancalId, e.tipo);
+
+      // candidatos: bancals whose GLOBAL last event was at THIS platform
+      // (plataformaActualId guarantees the bancal has not been seen at any other platform since)
+      const candidatos = await prisma.bancal.findMany({
+        where: { plataformaActualId: plataforma.id },
+        select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
+        orderBy: { codigo: 'asc' },
       });
 
-      // Build latest-event-type map per bancal (last write wins)
-      const latestMap = new Map<string, { tipo: string; lectura: Date }>();
-      for (const e of allEvts) {
-        latestMap.set(e.bancalId, { tipo: e.tipo, lectura: e.lectura });
-      }
+      // En plataforma: global last event is here AND that event is not CNTO
+      const bancalesEnPlataforma = candidatos
+        .filter(b => latestHereMap.get(b.id) !== 'CNTO')
+        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }));
 
-      // Fetch bancal details for those IDs
-      const latestBancalIds = [...latestMap.keys()];
-      const latestBancales = latestBancalIds.length > 0
-        ? await prisma.bancal.findMany({
-            where: { id: { in: latestBancalIds } },
-            select: { id: true, codigo: true, cliente: true },
-          })
-        : [];
-
-      const bancalesEnPlataforma = latestBancales
-        .filter(b => latestMap.get(b.id)?.tipo !== 'CNTO')
-        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string,
-          ultimaLectura: latestMap.get(b.id)?.lectura ?? null }))
-        .sort((a, b) => a.codigo.localeCompare(b.codigo));
-
-      const bancalesRiesgo = latestBancales
-        .filter(b => {
-          const l = latestMap.get(b.id);
-          return l && l.tipo !== 'CNTO' && l.lectura < threshold;
-        })
-        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string,
-          ultimaLectura: latestMap.get(b.id)?.lectura ?? null }))
+      // En riesgo: in platform (as above) AND no activity anywhere within umbral period
+      // ultimaLectura is the global last event timestamp — covers all platforms
+      const bancalesRiesgo = candidatos
+        .filter(b => latestHereMap.get(b.id) !== 'CNTO'
+          && b.ultimaLectura !== null && b.ultimaLectura < threshold)
+        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }))
         .sort((a, b) => (a.ultimaLectura?.getTime() ?? 0) - (b.ultimaLectura?.getTime() ?? 0));
 
       // --- Historico (last 12 weeks) ---
