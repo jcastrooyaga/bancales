@@ -100,7 +100,6 @@ export interface HistoricoItem {
   cliente: Cliente;
   evento: TipoEvento;
   usuario: string;
-  estado: string;
   plataforma: string;
   plataformaNombre: string;
 }

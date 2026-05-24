@@ -1,24 +1,38 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, TipoEvento, Cliente } from '@prisma/client';
 
 export const createHistoricoRouter = (prisma: PrismaClient) => {
   const router = Router();
 
   router.get('/', async (req, res, next) => {
     try {
-      const dias = Math.min(parseInt((req.query.dias as string) ?? '30', 10) || 30, 365);
-      const desde = new Date();
-      desde.setDate(desde.getDate() - dias);
+      const { desde: desdeParam, hasta: hastaParam, tipo, cliente, plataformaId: platParam } = req.query;
+
+      // Date range — default last 30 days; dates are day-boundaries (no time)
+      const desde = desdeParam
+        ? new Date(`${desdeParam}T00:00:00.000Z`)
+        : (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() - 30); d.setUTCHours(0, 0, 0, 0); return d; })();
+      const hasta = hastaParam
+        ? new Date(`${hastaParam}T23:59:59.999Z`)
+        : new Date();
 
       const where: Record<string, unknown> = {
-        lectura: { gte: desde },
+        lectura: { gte: desde, lte: hasta },
       };
 
       if (req.user?.role === 'PLATAFORMA') {
         if (!req.user.plataformaId) { res.json([]); return; }
         where.plataformaId = req.user.plataformaId;
-      } else if (req.query.plataformaId) {
-        where.plataformaId = req.query.plataformaId as string;
+      } else if (platParam) {
+        where.plataformaId = platParam as string;
+      }
+
+      if (tipo && ['CNTI', 'CNTO', 'CNTS'].includes(tipo as string)) {
+        where.tipo = tipo as TipoEvento;
+      }
+
+      if (cliente && ['MICHELIN', 'CONTINENTAL'].includes(cliente as string)) {
+        where.bancal = { cliente: cliente as Cliente };
       }
 
       const eventos = await prisma.evento.findMany({
@@ -30,9 +44,8 @@ export const createHistoricoRouter = (prisma: PrismaClient) => {
           tipo: true,
           lectura: true,
           usuario: true,
-          fuente: true,
           plataforma: { select: { codigo: true, nombre: true } },
-          bancal: { select: { codigo: true, cliente: true, activo: true } },
+          bancal: { select: { codigo: true, cliente: true } },
         },
       });
 
@@ -43,7 +56,6 @@ export const createHistoricoRouter = (prisma: PrismaClient) => {
         cliente: e.bancal.cliente,
         evento: e.tipo,
         usuario: e.usuario,
-        estado: e.bancal.activo ? 'Activo' : 'Inactivo',
         plataforma: e.plataforma.codigo,
         plataformaNombre: e.plataforma.nombre,
       })));
