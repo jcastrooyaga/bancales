@@ -188,7 +188,6 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
         )}
         <div>
           <h1 className="text-xl font-bold text-white">{plataforma.codigo} · {plataforma.nombre}</h1>
-          <p className="text-xs text-blue-200 mt-0.5">{plataforma.pais}</p>
         </div>
       </div>
 
