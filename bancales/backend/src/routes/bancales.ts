@@ -15,6 +15,7 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       const umbral = parseInt(cfgUmbral?.valor ?? '4');
       const threshold = new Date();
       threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
+      threshold.setUTCHours(0, 0, 0, 0); // anchor to midnight so diasSinLectura >= umbral*7+1
 
       const where: Record<string, unknown> = {};
       if (cliente) where.cliente = cliente;
