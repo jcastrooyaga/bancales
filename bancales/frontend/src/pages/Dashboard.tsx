@@ -82,11 +82,11 @@ export const Dashboard: React.FC = () => {
           {/* KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             {[
-              { label: 'En circuito', value: data.kpis.totalEnCircuito, color: 'bg-blue-50 text-blue-700' },
-              { label: 'Michelin', value: data.kpis.totalMichelin, color: 'bg-indigo-50 text-indigo-700' },
-              { label: 'Continental', value: data.kpis.totalContinental, color: 'bg-violet-50 text-violet-700' },
-              { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-amber-50 text-amber-700' },
-              { label: 'Plat. con desv.', value: data.kpis.plataformasDesviacion, color: 'bg-red-50 text-red-700' },
+              { label: 'En circuito', value: data.kpis.totalEnCircuito, color: 'bg-slate-700 text-white' },
+              { label: 'Michelin', value: data.kpis.totalMichelin, color: 'bg-blue-600 text-white' },
+              { label: 'Continental', value: data.kpis.totalContinental, color: 'bg-orange-500 text-white' },
+              { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-red-800 text-white' },
+              { label: 'Plat. con desv.', value: data.kpis.plataformasDesviacion, color: 'bg-white text-red-800 ring-2 ring-red-800' },
             ].map(k => (
               <div key={k.label} className={`rounded-xl p-4 ${k.color}`}>
                 <p className="text-2xl font-bold">{k.value}</p>
