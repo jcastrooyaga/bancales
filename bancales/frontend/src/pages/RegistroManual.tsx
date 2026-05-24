@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 import { Plataforma } from '../types';
 
@@ -48,10 +48,10 @@ export const RegistroManual: React.FC = () => {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Registro manual de evento</h1>
+      <h1 className="text-2xl font-bold text-brand mb-6">Registro manual de evento</h1>
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Código bancal</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">CÃ³digo bancal</label>
           <input
             name="codigoBancal"
             value={form.codigoBancal}
@@ -60,7 +60,7 @@ export const RegistroManual: React.FC = () => {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 font-mono uppercase"
             required
           />
-          <p className="text-xs text-slate-500 mt-1">Prefijo BC = Michelin · CAT = Continental</p>
+          <p className="text-xs text-slate-500 mt-1">Prefijo BC = Michelin Â· CAT = Continental</p>
         </div>
 
         <div>
@@ -71,9 +71,9 @@ export const RegistroManual: React.FC = () => {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
           >
-            <option value="CNTI">CNTI — Entrada</option>
-            <option value="CNTO">CNTO — Salida</option>
-            <option value="CNTS">CNTS — Inventario</option>
+            <option value="CNTI">CNTI â€” Entrada</option>
+            <option value="CNTO">CNTO â€” Salida</option>
+            <option value="CNTS">CNTS â€” Inventario</option>
           </select>
         </div>
 
@@ -88,7 +88,7 @@ export const RegistroManual: React.FC = () => {
           >
             <option value="">Seleccionar plataforma...</option>
             {plataformas.map(p => (
-              <option key={p.id} value={p.codigo}>{p.codigo} · {p.nombre}</option>
+              <option key={p.id} value={p.codigo}>{p.codigo} Â· {p.nombre}</option>
             ))}
           </select>
         </div>
@@ -130,3 +130,4 @@ export const RegistroManual: React.FC = () => {
     </div>
   );
 };
+

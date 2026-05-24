@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { Plataforma } from '../types';
@@ -47,7 +47,7 @@ export const Plataformas: React.FC = () => {
   };
 
   const handlePwChange = async (codigo: string) => {
-    if (!pwValue || pwValue.length < 4) { setPwMsg('Mínimo 4 caracteres'); return; }
+    if (!pwValue || pwValue.length < 4) { setPwMsg('MÃ­nimo 4 caracteres'); return; }
     setPwSaving(true);
     setPwMsg('');
     try {
@@ -56,7 +56,7 @@ export const Plataformas: React.FC = () => {
       setPwValue('');
       setPwMsg('');
     } catch {
-      setPwMsg('Error al cambiar contraseña');
+      setPwMsg('Error al cambiar contraseÃ±a');
     } finally {
       setPwSaving(false);
     }
@@ -65,7 +65,7 @@ export const Plataformas: React.FC = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">Gestión de plataformas</h1>
+        <h1 className="text-2xl font-bold text-brand">GestiÃ³n de plataformas</h1>
         <button
           onClick={() => setShowForm(!showForm)}
           className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
@@ -77,7 +77,7 @@ export const Plataformas: React.FC = () => {
       {showForm && (
         <form onSubmit={handleCreate} className="bg-white rounded-xl border p-4 mb-6 flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs text-slate-600 mb-1">Código</label>
+            <label className="block text-xs text-slate-600 mb-1">CÃ³digo</label>
             <input
               value={form.codigo}
               onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))}
@@ -98,7 +98,7 @@ export const Plataformas: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-xs text-slate-600 mb-1">País</label>
+            <label className="block text-xs text-slate-600 mb-1">PaÃ­s</label>
             <select
               value={form.pais}
               onChange={e => setForm(p => ({ ...p, pais: e.target.value }))}
@@ -118,11 +118,11 @@ export const Plataformas: React.FC = () => {
         <table className="w-full text-sm">
           <thead className="bg-brand">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-white">Código</th>
+              <th className="text-left px-4 py-3 font-medium text-white">CÃ³digo</th>
               <th className="text-left px-4 py-3 font-medium text-white">Nombre</th>
-              <th className="text-left px-4 py-3 font-medium text-white">País</th>
+              <th className="text-left px-4 py-3 font-medium text-white">PaÃ­s</th>
               <th className="text-left px-4 py-3 font-medium text-white">Estado</th>
-              <th className="text-left px-4 py-3 font-medium text-white">Contraseña</th>
+              <th className="text-left px-4 py-3 font-medium text-white">ContraseÃ±a</th>
               <th className="text-left px-4 py-3 font-medium text-white">Acciones</th>
             </tr>
           </thead>
@@ -145,7 +145,7 @@ export const Plataformas: React.FC = () => {
                         autoFocus
                       />
                       <button onClick={() => handleEdit(p.id)} className="text-green-600 text-xs font-medium">OK</button>
-                      <button onClick={() => setEditId(null)} className="text-slate-400 text-xs">✕</button>
+                      <button onClick={() => setEditId(null)} className="text-slate-400 text-xs">âœ•</button>
                     </div>
                   ) : (
                     <span
@@ -169,13 +169,13 @@ export const Plataformas: React.FC = () => {
                         type="password"
                         value={pwValue}
                         onChange={e => setPwValue(e.target.value)}
-                        placeholder="Nueva contraseña"
+                        placeholder="Nueva contraseÃ±a"
                         className="border rounded px-2 py-1 text-xs w-36 focus:outline-none"
                         autoFocus
                         onKeyDown={e => e.key === 'Enter' && handlePwChange(p.codigo)}
                       />
                       <button onClick={() => handlePwChange(p.codigo)} disabled={pwSaving} className="text-green-600 text-xs font-medium">OK</button>
-                      <button onClick={() => { setPwCodigo(null); setPwValue(''); setPwMsg(''); }} className="text-slate-400 text-xs">✕</button>
+                      <button onClick={() => { setPwCodigo(null); setPwValue(''); setPwMsg(''); }} className="text-slate-400 text-xs">âœ•</button>
                       {pwMsg && <span className="text-red-500 text-xs">{pwMsg}</span>}
                     </div>
                   ) : (
@@ -203,3 +203,4 @@ export const Plataformas: React.FC = () => {
     </div>
   );
 };
+

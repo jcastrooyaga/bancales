@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { WeekSelector, currentWeek } from '../components/WeekSelector';
@@ -7,7 +7,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ModalProps {
   title: string;
@@ -21,7 +21,7 @@ const MovimientosModal: React.FC<ModalProps> = ({ title, items, onClose }) => (
     <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
       <div className="flex items-center justify-between px-5 py-4 border-b">
         <h3 className="font-semibold text-slate-800">{title}</h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl leading-none">×</button>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl leading-none">Ã—</button>
       </div>
       <div className="overflow-y-auto divide-y flex-1 text-sm">
         {items.length === 0 && <p className="px-5 py-4 text-slate-400">Sin registros</p>}
@@ -44,7 +44,7 @@ const MovimientosModal: React.FC<ModalProps> = ({ title, items, onClose }) => (
   </div>
 );
 
-// ─── Custom X-axis tick with descuadre ────────────────────────────────────────
+// â”€â”€â”€ Custom X-axis tick with descuadre â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const WeekTick: React.FC<{ x?: number; y?: number; payload?: { value: string }; data: { semana: string; desviacion: number }[] }> = ({ x = 0, y = 0, payload, data }) => {
   const entry = data.find(d => d.semana === payload?.value);
@@ -60,7 +60,7 @@ const WeekTick: React.FC<{ x?: number; y?: number; payload?: { value: string }; 
   );
 };
 
-// ─── Bancal list item ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Bancal list item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const BancalRow: React.FC<{ b: BancalSimple; onClick: () => void; extra?: React.ReactNode }> = ({ b, onClick, extra }) => (
   <div
@@ -84,7 +84,7 @@ const BancalRow: React.FC<{ b: BancalSimple; onClick: () => void; extra?: React.
   </div>
 );
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Props {
   overrideCodigo?: string;
@@ -157,7 +157,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       detail: { title: `Salidas CNTO (${r.cntoCount})`, items: r.cntoDetalle },
     },
     {
-      label: 'Inv. Teórico',
+      label: 'Inv. TeÃ³rico',
       value: r.invTeorico,
       color: 'bg-indigo-50 text-indigo-700',
       detail: null, // formula only, no list
@@ -173,7 +173,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       value: r.desviacion === 0 ? '0' : (r.desviacion > 0 ? `+${r.desviacion}` : String(r.desviacion)),
       color: r.desviacion < 0 ? 'bg-red-50 text-red-700' : r.desviacion > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500',
       detail: descuadre.length > 0
-        ? { title: `Descuadre — bancales no inventariados (${descuadre.length})`, items: descuadre.map(b => ({ codigo: b.codigo, cliente: b.cliente, lectura: b.ultimaLectura ?? '' })) }
+        ? { title: `Descuadre â€” bancales no inventariados (${descuadre.length})`, items: descuadre.map(b => ({ codigo: b.codigo, cliente: b.cliente, lectura: b.ultimaLectura ?? '' })) }
         : null,
     },
   ];
@@ -184,9 +184,9 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
 
       <div className="flex items-center gap-3 mb-6">
         {!overrideCodigo && (
-          <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">← Volver</button>
+          <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">â† Volver</button>
         )}
-        <h1 className="text-2xl font-bold text-slate-800">{plataforma.codigo} · {plataforma.nombre}</h1>
+        <h1 className="text-2xl font-bold text-brand">{plataforma.codigo} Â· {plataforma.nombre}</h1>
         <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{plataforma.pais}</span>
       </div>
 
@@ -196,7 +196,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
 
       {/* Evolution chart */}
       <div className="bg-white rounded-xl border p-4 mb-4">
-        <h2 className="text-sm font-semibold text-slate-700 mb-4">Evolución histórica (últimas 12 semanas)</h2>
+        <h2 className="text-sm font-semibold text-slate-700 mb-4">EvoluciÃ³n histÃ³rica (Ãºltimas 12 semanas)</h2>
         <ResponsiveContainer width="100%" height={230}>
           <LineChart data={historico} margin={{ bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -206,7 +206,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
             <Legend />
             <ReferenceLine y={0} stroke="#16a34a" strokeWidth={1.5} strokeDasharray="4 4" />
             <Line type="monotone" dataKey="real" name="Real" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
-            <Line type="monotone" dataKey="teorico" name="Teórico" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="teorico" name="TeÃ³rico" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -293,9 +293,9 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       <div className="bg-white rounded-xl border mb-6">
         <div className="px-4 py-3 border-b">
           <h2 className="font-semibold text-slate-700 text-sm">
-            Bancales en riesgo de pérdida ({bancalesRiesgo.length})
+            Bancales en riesgo de pÃ©rdida ({bancalesRiesgo.length})
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">Sin movimiento en más de {umbral ?? '—'} semanas</p>
+          <p className="text-xs text-slate-400 mt-0.5">Sin movimiento en mÃ¡s de {umbral ?? 'â€”'} semanas</p>
         </div>
         <div className="max-h-64 overflow-y-auto divide-y text-sm">
           {bancalesRiesgo.length === 0 && <p className="px-4 py-3 text-slate-400">Ninguno</p>}
@@ -319,21 +319,21 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       {/* Historical table */}
       <div className="bg-white rounded-xl border overflow-hidden">
         <div className="px-4 py-3 border-b">
-          <h2 className="font-semibold text-slate-700 text-sm">Histórico semana a semana</h2>
+          <h2 className="font-semibold text-slate-700 text-sm">HistÃ³rico semana a semana</h2>
         </div>
         <table className="w-full text-sm">
           <thead className="bg-brand">
             <tr>
               <th className="text-left px-4 py-2.5 font-medium text-white">Semana</th>
               <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Real</th>
-              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Teórico</th>
-              <th className="text-right px-4 py-2.5 font-medium text-white">Desviación</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. TeÃ³rico</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">DesviaciÃ³n</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {[...historico].reverse().map(h => (
               <tr key={`${h.year}-${h.semana}`} className={h.desviacion < 0 ? 'bg-red-50' : ''}>
-                <td className="px-4 py-2.5 font-mono text-slate-700">{h.semana} · {h.year}</td>
+                <td className="px-4 py-2.5 font-mono text-slate-700">{h.semana} Â· {h.year}</td>
                 <td className="px-4 py-2.5 text-right font-mono">{h.real}</td>
                 <td className="px-4 py-2.5 text-right font-mono">{h.teorico}</td>
                 <td className="px-4 py-2.5 text-right font-mono font-semibold">
@@ -349,3 +349,4 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
     </div>
   );
 };
+

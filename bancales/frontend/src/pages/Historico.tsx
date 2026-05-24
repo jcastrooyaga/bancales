@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { HistoricoItem, Plataforma } from '../types';
@@ -23,7 +23,7 @@ const tipoColor: Record<string, string> = {
 };
 
 const exportarCSV = (rows: HistoricoItem[], label: string) => {
-  const headers = ['Fecha', 'Código', 'Cliente', 'Evento', 'Plataforma', 'Usuario'];
+  const headers = ['Fecha', 'CÃ³digo', 'Cliente', 'Evento', 'Plataforma', 'Usuario'];
   const lines = [
     headers.join(';'),
     ...rows.map(r => [
@@ -35,7 +35,7 @@ const exportarCSV = (rows: HistoricoItem[], label: string) => {
       r.usuario,
     ].join(';')),
   ];
-  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['ï»¿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -86,7 +86,7 @@ export const Historico: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Histórico</h1>
+          <h1 className="text-2xl font-bold text-brand">HistÃ³rico</h1>
         </div>
         <button
           onClick={() => exportarCSV(items, exportLabel)}
@@ -158,7 +158,7 @@ export const Historico: React.FC = () => {
             >
               <option value="">Todas</option>
               {plataformas.map(p => (
-                <option key={p.id} value={p.id}>{p.codigo} — {p.nombre}</option>
+                <option key={p.id} value={p.id}>{p.codigo} â€” {p.nombre}</option>
               ))}
             </select>
           </div>
@@ -178,7 +178,7 @@ export const Historico: React.FC = () => {
               <thead className="bg-brand">
                 <tr>
                   <th className="text-left px-4 py-2.5 font-medium text-white whitespace-nowrap">Fecha</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-white">Código</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-white">CÃ³digo</th>
                   <th className="text-left px-4 py-2.5 font-medium text-white">Cliente</th>
                   <th className="text-left px-4 py-2.5 font-medium text-white">Evento</th>
                   {isAdmin && <th className="text-left px-4 py-2.5 font-medium text-white">Plataforma</th>}
@@ -223,3 +223,4 @@ export const Historico: React.FC = () => {
     </div>
   );
 };
+

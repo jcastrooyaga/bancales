@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -50,7 +50,7 @@ export const Configuracion: React.FC = () => {
       });
       setOk(true);
     } catch {
-      setError('Error al guardar la configuración');
+      setError('Error al guardar la configuraciÃ³n');
     } finally {
       setSaving(false);
     }
@@ -81,8 +81,8 @@ export const Configuracion: React.FC = () => {
     e.preventDefault();
     setPwError('');
     setPwOk(false);
-    if (newPassword !== confirmPassword) { setPwError('Las contraseñas no coinciden'); return; }
-    if (newPassword.length < 4) { setPwError('La contraseña debe tener al menos 4 caracteres'); return; }
+    if (newPassword !== confirmPassword) { setPwError('Las contraseÃ±as no coinciden'); return; }
+    if (newPassword.length < 4) { setPwError('La contraseÃ±a debe tener al menos 4 caracteres'); return; }
     setPwSaving(true);
     try {
       await apiClient.put('/auth/me/password', { password: newPassword });
@@ -90,7 +90,7 @@ export const Configuracion: React.FC = () => {
       setNewPassword('');
       setConfirmPassword('');
     } catch {
-      setPwError('Error al cambiar la contraseña');
+      setPwError('Error al cambiar la contraseÃ±a');
     } finally {
       setPwSaving(false);
     }
@@ -102,12 +102,12 @@ export const Configuracion: React.FC = () => {
   if (!isAdmin) {
     return (
       <div className="max-w-md">
-        <h1 className="text-2xl font-bold text-slate-800 mb-6">Configuración</h1>
+        <h1 className="text-2xl font-bold text-brand mb-6">ConfiguraciÃ³n</h1>
         <div className="bg-white rounded-xl border p-6">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">Cambiar contraseña</h2>
+          <h2 className="text-sm font-semibold text-slate-700 mb-4">Cambiar contraseÃ±a</h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Nueva contraseña</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Nueva contraseÃ±a</label>
               <input
                 type="password"
                 value={newPassword}
@@ -117,7 +117,7 @@ export const Configuracion: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Confirmar contraseña</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Confirmar contraseÃ±a</label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -127,13 +127,13 @@ export const Configuracion: React.FC = () => {
               />
             </div>
             {pwError && <p className="text-red-600 text-sm">{pwError}</p>}
-            {pwOk && <p className="text-green-600 text-sm">Contraseña actualizada correctamente.</p>}
+            {pwOk && <p className="text-green-600 text-sm">ContraseÃ±a actualizada correctamente.</p>}
             <button
               type="submit"
               disabled={pwSaving}
               className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
             >
-              {pwSaving ? 'Guardando...' : 'Cambiar contraseña'}
+              {pwSaving ? 'Guardando...' : 'Cambiar contraseÃ±a'}
             </button>
           </form>
         </div>
@@ -144,7 +144,7 @@ export const Configuracion: React.FC = () => {
   // Admin view: system params + danger zone
   return (
     <div className="max-w-md">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Parámetros del sistema</h1>
+      <h1 className="text-2xl font-bold text-brand mb-6">ParÃ¡metros del sistema</h1>
       <form onSubmit={handleSave} className="bg-white rounded-xl border p-6 space-y-6">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -159,12 +159,12 @@ export const Configuracion: React.FC = () => {
             className="w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
           />
           <p className="text-xs text-slate-500 mt-1">
-            Semanas sin lectura para considerar un bancal en riesgo de pérdida.
+            Semanas sin lectura para considerar un bancal en riesgo de pÃ©rdida.
           </p>
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Ventana de deduplicación (minutos)
+            Ventana de deduplicaciÃ³n (minutos)
           </label>
           <input
             type="number"
@@ -179,7 +179,7 @@ export const Configuracion: React.FC = () => {
           </p>
         </div>
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        {ok && <p className="text-green-600 text-sm">Configuración guardada correctamente.</p>}
+        {ok && <p className="text-green-600 text-sm">ConfiguraciÃ³n guardada correctamente.</p>}
         <button
           type="submit"
           disabled={saving}
@@ -193,7 +193,7 @@ export const Configuracion: React.FC = () => {
       <div className="mt-8 bg-white rounded-xl border border-red-200 p-6">
         <h2 className="text-sm font-semibold text-red-700 mb-1">Zona peligrosa</h2>
         <p className="text-xs text-slate-500 mb-4">
-          Elimina todos los bancales y eventos de la base de datos. Esta acción es irreversible.
+          Elimina todos los bancales y eventos de la base de datos. Esta acciÃ³n es irreversible.
         </p>
 
         {vaciarOk && <p className="text-green-600 text-sm mb-3">Base de datos vaciada correctamente.</p>}
@@ -211,14 +211,14 @@ export const Configuracion: React.FC = () => {
         {vaciarStep === 'confirm1' && (
           <div className="space-y-3">
             <p className="text-sm font-medium text-slate-700">
-              ¿Seguro que quieres eliminar todos los bancales y eventos? Esta acción no se puede deshacer.
+              Â¿Seguro que quieres eliminar todos los bancales y eventos? Esta acciÃ³n no se puede deshacer.
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => { setVaciarStep('confirm2'); setConfirmText(''); }}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
               >
-                Sí, continuar
+                SÃ­, continuar
               </button>
               <button
                 onClick={cancelVaciar}
@@ -264,3 +264,4 @@ export const Configuracion: React.FC = () => {
     </div>
   );
 };
+
