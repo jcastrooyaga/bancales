@@ -175,14 +175,14 @@ export const Historico: React.FC = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-brand">
                 <tr>
-                  <th className="text-left px-4 py-2.5 font-medium text-slate-600 whitespace-nowrap">Fecha</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-slate-600">Código</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-slate-600">Cliente</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-slate-600">Evento</th>
-                  {isAdmin && <th className="text-left px-4 py-2.5 font-medium text-slate-600">Plataforma</th>}
-                  <th className="text-left px-4 py-2.5 font-medium text-slate-600">Usuario</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-white whitespace-nowrap">Fecha</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-white">Código</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-white">Cliente</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-white">Evento</th>
+                  {isAdmin && <th className="text-left px-4 py-2.5 font-medium text-white">Plataforma</th>}
+                  <th className="text-left px-4 py-2.5 font-medium text-white">Usuario</th>
                 </tr>
               </thead>
               <tbody className="divide-y">

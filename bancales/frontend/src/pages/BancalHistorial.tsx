@@ -69,13 +69,13 @@ export const BancalHistorial: React.FC = () => {
           <h2 className="font-semibold text-slate-700 text-sm">Historial de eventos ({eventos.length})</h2>
         </div>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-brand">
             <tr>
-              <th className="text-left px-4 py-2.5 font-medium text-slate-600">Fecha y hora</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slate-600">Tipo</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slate-600">Plataforma</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slate-600">Operario</th>
-              <th className="text-left px-4 py-2.5 font-medium text-slate-600">Fuente</th>
+              <th className="text-left px-4 py-2.5 font-medium text-white">Fecha y hora</th>
+              <th className="text-left px-4 py-2.5 font-medium text-white">Tipo</th>
+              <th className="text-left px-4 py-2.5 font-medium text-white">Plataforma</th>
+              <th className="text-left px-4 py-2.5 font-medium text-white">Operario</th>
+              <th className="text-left px-4 py-2.5 font-medium text-white">Fuente</th>
             </tr>
           </thead>
           <tbody className="divide-y">

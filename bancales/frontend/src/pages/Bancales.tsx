@@ -73,14 +73,14 @@ export const Bancales: React.FC = () => {
             {bancales.length} bancales
           </div>
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-brand">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Código</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Cliente</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Plataforma actual</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Última lectura</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-600">Días sin lectura</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600">Estado</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Código</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Cliente</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Plataforma actual</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Última lectura</th>
+                <th className="text-right px-4 py-3 font-medium text-white">Días sin lectura</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Estado</th>
               </tr>
             </thead>
             <tbody className="divide-y">

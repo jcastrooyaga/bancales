@@ -322,12 +322,12 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
           <h2 className="font-semibold text-slate-700 text-sm">Histórico semana a semana</h2>
         </div>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-brand">
             <tr>
-              <th className="text-left px-4 py-2.5 font-medium text-slate-600">Semana</th>
-              <th className="text-right px-4 py-2.5 font-medium text-slate-600">Inv. Real</th>
-              <th className="text-right px-4 py-2.5 font-medium text-slate-600">Inv. Teórico</th>
-              <th className="text-right px-4 py-2.5 font-medium text-slate-600">Desviación</th>
+              <th className="text-left px-4 py-2.5 font-medium text-white">Semana</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Real</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Teórico</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Desviación</th>
             </tr>
           </thead>
           <tbody className="divide-y">

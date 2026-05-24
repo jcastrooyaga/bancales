@@ -116,14 +116,14 @@ export const Plataformas: React.FC = () => {
 
       <div className="bg-white rounded-xl border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-brand">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Código</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Nombre</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">País</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Estado</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Contraseña</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Acciones</th>
+              <th className="text-left px-4 py-3 font-medium text-white">Código</th>
+              <th className="text-left px-4 py-3 font-medium text-white">Nombre</th>
+              <th className="text-left px-4 py-3 font-medium text-white">País</th>
+              <th className="text-left px-4 py-3 font-medium text-white">Estado</th>
+              <th className="text-left px-4 py-3 font-medium text-white">Contraseña</th>
+              <th className="text-left px-4 py-3 font-medium text-white">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y">

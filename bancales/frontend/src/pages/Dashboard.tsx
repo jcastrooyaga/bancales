@@ -98,13 +98,13 @@ export const Dashboard: React.FC = () => {
           {/* Platform table */}
           <div className="bg-white rounded-xl border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-brand">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">Plataforma</th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">Inv. Real</th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">Inv. Teórico</th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">Desviación</th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">En riesgo</th>
+                  <th className="text-left px-4 py-3 font-medium text-white">Plataforma</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">Inv. Real</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">Inv. Teórico</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">Desviación</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">En riesgo</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
