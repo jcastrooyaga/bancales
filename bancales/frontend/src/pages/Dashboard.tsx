@@ -89,7 +89,7 @@ export const Dashboard: React.FC = () => {
                   { label: 'Michelin', value: data.kpis.totalMichelin, color: 'bg-blue-600 text-white' },
                   { label: 'Continental', value: data.kpis.totalContinental, color: 'bg-orange-500 text-white' },
                   { label: 'Bancales desv.', value: totalDesviados, color: 'bg-red-800 text-white' },
-                  { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-amber-600 text-red-900' },
+                  { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-yellow-400 text-red-900' },
                   { label: 'Plat. con desv.', value: data.kpis.plataformasDesviacion, color: 'bg-white text-red-800 ring-2 ring-red-800' },
                 ].map(k => (
                   <div key={k.label} className={`rounded-xl p-4 ${k.color}`}>
@@ -136,7 +136,7 @@ export const Dashboard: React.FC = () => {
                       {(() => {
                         const denom = fila.prevReal + fila.cntiCount + fila.cntoCount;
                         if (denom === 0) return <span className="text-slate-400">—</span>;
-                        const pct = (Math.abs(fila.desviacion) / denom * 100).toFixed(1);
+                        const pct = (Math.abs(fila.desviacion) / denom * 100).toFixed(0);
                         return <span className={fila.desviacion !== 0 ? 'text-amber-600 font-semibold' : 'text-slate-400'}>{pct}%</span>;
                       })()}
                     </td>

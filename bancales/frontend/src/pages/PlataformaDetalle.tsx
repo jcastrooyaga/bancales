@@ -173,7 +173,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       value: (() => {
         const denom = r.invRealAnterior + r.cntiCount + r.cntoCount;
         if (denom === 0) return '—';
-        return `${(Math.abs(r.desviacion) / denom * 100).toFixed(1)}%`;
+        return `${(Math.abs(r.desviacion) / denom * 100).toFixed(0)}%`;
       })(),
       color: r.desviacion !== 0 ? 'bg-amber-50 text-amber-700' : 'bg-gray-50 text-gray-500',
       detail: null,
@@ -358,7 +358,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
                   {(() => {
                     const denom = h.prevReal + h.cnti + h.cnto;
                     if (denom === 0) return <span className="text-slate-400">—</span>;
-                    const pct = (Math.abs(h.desviacion) / denom * 100).toFixed(1);
+                    const pct = (Math.abs(h.desviacion) / denom * 100).toFixed(0);
                     return <span className={h.desviacion !== 0 ? 'text-amber-600 font-semibold' : 'text-slate-400'}>{pct}%</span>;
                   })()}
                 </td>
