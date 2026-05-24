@@ -39,6 +39,9 @@ export interface FilaPlataforma {
   invReal: number;
   invTeorico: number;
   desviacion: number;
+  prevReal: number;
+  cntiCount: number;
+  cntoCount: number;
   bancalesRiesgo: number;
 }
 

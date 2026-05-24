@@ -169,6 +169,16 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       detail: { title: `Inventario real CNTS (${r.invReal})`, items: r.invRealDetalle },
     },
     {
+      label: '% Error',
+      value: (() => {
+        const denom = r.invRealAnterior + r.cntiCount + r.cntoCount;
+        if (denom === 0) return '—';
+        return `${(Math.abs(r.desviacion) / denom * 100).toFixed(1)}%`;
+      })(),
+      color: r.desviacion !== 0 ? 'bg-amber-50 text-amber-700' : 'bg-gray-50 text-gray-500',
+      detail: null,
+    },
+    {
       label: 'Diferencia',
       value: r.desviacion === 0 ? '0' : (r.desviacion > 0 ? `+${r.desviacion}` : String(r.desviacion)),
       color: r.desviacion < 0 ? 'bg-red-50 text-red-700' : r.desviacion > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500',
@@ -215,7 +225,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
       {/* Resumen semanal */}
       <div className="bg-white rounded-xl border p-4 mb-6">
         <h2 className="text-sm font-semibold text-slate-700 mb-3">Resumen semana</h2>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
           {resumenCards.map(card => (
             <div
               key={card.label}
@@ -331,6 +341,7 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
               <th className="text-right px-4 py-2.5 font-medium text-white">Salidas</th>
               <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Teórico</th>
               <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Real</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">% Error</th>
               <th className="text-right px-4 py-2.5 font-medium text-white">Desviación</th>
             </tr>
           </thead>
@@ -343,6 +354,14 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
                 <td className="px-4 py-2.5 text-right font-mono text-orange-600">-{h.cnto}</td>
                 <td className="px-4 py-2.5 text-right font-mono text-slate-600">{h.teorico}</td>
                 <td className="px-4 py-2.5 text-right font-mono">{h.real}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-xs">
+                  {(() => {
+                    const denom = h.prevReal + h.cnti + h.cnto;
+                    if (denom === 0) return <span className="text-slate-400">—</span>;
+                    const pct = (Math.abs(h.desviacion) / denom * 100).toFixed(1);
+                    return <span className={h.desviacion !== 0 ? 'text-amber-600 font-semibold' : 'text-slate-400'}>{pct}%</span>;
+                  })()}
+                </td>
                 <td className="px-4 py-2.5 text-right font-mono font-semibold">
                   <span className={h.desviacion < 0 ? 'text-red-600' : h.desviacion > 0 ? 'text-green-600' : 'text-slate-400'}>
                     {h.desviacion > 0 ? '+' : ''}{h.desviacion}

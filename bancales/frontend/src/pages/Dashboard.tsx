@@ -104,6 +104,7 @@ export const Dashboard: React.FC = () => {
                   <th className="text-right px-4 py-3 font-medium text-white">Inv. Real</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Inv. Teórico</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Desviación</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">% Error</th>
                   <th className="text-right px-4 py-3 font-medium text-white">En riesgo</th>
                 </tr>
               </thead>
@@ -124,6 +125,14 @@ export const Dashboard: React.FC = () => {
                       <span className={fila.desviacion < 0 ? 'text-red-600' : fila.desviacion > 0 ? 'text-green-600' : 'text-slate-500'}>
                         {fila.desviacion > 0 ? '+' : ''}{fila.desviacion}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono text-xs">
+                      {(() => {
+                        const denom = fila.prevReal + fila.cntiCount + fila.cntoCount;
+                        if (denom === 0) return <span className="text-slate-400">—</span>;
+                        const pct = (Math.abs(fila.desviacion) / denom * 100).toFixed(1);
+                        return <span className={fila.desviacion !== 0 ? 'text-amber-600 font-semibold' : 'text-slate-400'}>{pct}%</span>;
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {fila.bancalesRiesgo > 0 ? (

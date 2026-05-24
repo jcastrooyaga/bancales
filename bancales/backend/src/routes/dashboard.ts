@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { PrismaClient, Cliente } from '@prisma/client';
 import {
   calcInventarioReal,
-  calcInventarioTeorico,
   parseWeekParam,
   currentWeek,
   formatWeek,
   isoWeekOf,
+  previousWeek,
+  getWeekBounds,
 } from '../services/weekService';
 
 export const createDashboardRouter = (prisma: PrismaClient) => {
@@ -53,10 +54,28 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
       });
 
       // Per-platform calculations
+      const prev = previousWeek(w);
+      const { cntiStart, cntiEnd, cntoStart, cntoEnd } = getWeekBounds(w.year, w.week);
+
       const filas = await Promise.all(
         plataformas.map(async p => {
-          const real = await calcInventarioReal(prisma, p.id, w.year, w.week, cliente);
-          const teorico = await calcInventarioTeorico(prisma, p.id, w.year, w.week, cliente);
+          const clienteFilter = cliente ? { bancal: { cliente } } : {};
+          const [real, prevReal, cntiEvts, cntoEvts] = await Promise.all([
+            calcInventarioReal(prisma, p.id, w.year, w.week, cliente),
+            calcInventarioReal(prisma, p.id, prev.year, prev.week, cliente),
+            prisma.evento.findMany({
+              where: { plataformaId: p.id, tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, ...clienteFilter },
+              select: { bancalId: true }, distinct: ['bancalId'],
+            }),
+            prisma.evento.findMany({
+              where: { plataformaId: p.id, tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, ...clienteFilter },
+              select: { bancalId: true }, distinct: ['bancalId'],
+            }),
+          ]);
+          const cntiCount = cntiEvts.length;
+          const cntoCount = cntoEvts.length;
+          const invTeorico = prevReal + cntiCount - cntoCount;
+          const desviacion = real - invTeorico;
 
           // Match detail page logic: exclude bancals whose last event at this platform is CNTO
           const allEvtsHere = await prisma.evento.findMany({
@@ -79,8 +98,11 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
           return {
             plataforma: { id: p.id, codigo: p.codigo, nombre: p.nombre, pais: p.pais },
             invReal: real,
-            invTeorico: teorico,
-            desviacion: real - teorico,
+            invTeorico,
+            desviacion,
+            prevReal,
+            cntiCount,
+            cntoCount,
             bancalesRiesgo: riesgo,
           };
         })
