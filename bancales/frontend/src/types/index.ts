@@ -110,7 +110,7 @@ export interface BancalDescuadre extends BancalSimple {
 
 export interface DetalleData {
   plataforma: Plataforma;
-  historico: { semana: string; year: number; real: number; teorico: number; desviacion: number }[];
+  historico: { semana: string; year: number; prevReal: number; cnti: number; cnto: number; teorico: number; real: number; desviacion: number }[];
   resumenSemana: ResumenSemana;
   bancalesEnPlataforma: BancalSimple[];
   sobrantes: BancalSimple[];

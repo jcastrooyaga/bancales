@@ -327,8 +327,11 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
           <thead className="bg-brand">
             <tr>
               <th className="text-left px-4 py-2.5 font-medium text-white">Semana</th>
-              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Real</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. S-1</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Entradas</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Salidas</th>
               <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Teórico</th>
+              <th className="text-right px-4 py-2.5 font-medium text-white">Inv. Real</th>
               <th className="text-right px-4 py-2.5 font-medium text-white">Desviación</th>
             </tr>
           </thead>
@@ -336,8 +339,11 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
             {[...historico].reverse().map(h => (
               <tr key={`${h.year}-${h.semana}`} className={h.desviacion < 0 ? 'bg-red-50' : ''}>
                 <td className="px-4 py-2.5 font-mono text-slate-700">{h.semana} · {h.year}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-slate-500">{h.prevReal}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-green-700">+{h.cnti}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-orange-600">-{h.cnto}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-slate-600">{h.teorico}</td>
                 <td className="px-4 py-2.5 text-right font-mono">{h.real}</td>
-                <td className="px-4 py-2.5 text-right font-mono">{h.teorico}</td>
                 <td className="px-4 py-2.5 text-right font-mono font-semibold">
                   <span className={h.desviacion < 0 ? 'text-red-600' : h.desviacion > 0 ? 'text-green-600' : 'text-slate-400'}>
                     {h.desviacion > 0 ? '+' : ''}{h.desviacion}

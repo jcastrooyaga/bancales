@@ -259,10 +259,25 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const historico = [];
       let cur = w;
       for (let i = 0; i < 12; i++) {
-        const real = await calcInventarioReal(prisma, plataforma.id, cur.year, cur.week);
-        const teorico = await calcInventarioTeorico(prisma, plataforma.id, cur.year, cur.week);
-        historico.unshift({ semana: formatWeek(cur), year: cur.year, real, teorico, desviacion: real - teorico });
-        cur = previousWeek(cur);
+        const prev = previousWeek(cur);
+        const bounds = getWeekBounds(cur.year, cur.week);
+        const [real, prevReal, cntiEvts, cntoEvts] = await Promise.all([
+          calcInventarioReal(prisma, plataforma.id, cur.year, cur.week),
+          calcInventarioReal(prisma, plataforma.id, prev.year, prev.week),
+          prisma.evento.findMany({
+            where: { plataformaId: plataforma.id, tipo: 'CNTI', lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd } },
+            select: { bancalId: true }, distinct: ['bancalId'],
+          }),
+          prisma.evento.findMany({
+            where: { plataformaId: plataforma.id, tipo: 'CNTO', lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd } },
+            select: { bancalId: true }, distinct: ['bancalId'],
+          }),
+        ]);
+        const cnti = cntiEvts.length;
+        const cnto = cntoEvts.length;
+        const teorico = prevReal + cnti - cnto;
+        historico.unshift({ semana: formatWeek(cur), year: cur.year, prevReal, cnti, cnto, teorico, real, desviacion: real - teorico });
+        cur = prev;
       }
 
       res.json({ plataforma, historico, resumenSemana, bancalesEnPlataforma, sobrantes, descuadre, bancalesRiesgo, umbral });
