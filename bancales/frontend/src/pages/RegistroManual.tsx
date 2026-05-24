@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
+import { useAuth } from '../contexts/AuthContext';
 import { Plataforma } from '../types';
 
 export const RegistroManual: React.FC = () => {
+  const { user } = useAuth();
   const [plataformas, setPlataformas] = useState<Plataforma[]>([]);
   const [form, setForm] = useState({
     codigoBancal: '',
     tipo: 'CNTI',
     codigoPlataforma: '',
     lectura: new Date().toISOString().slice(0, 16),
-    usuario: '',
+    observaciones: '',
   });
   const [loading, setLoading] = useState(false);
   const [ok, setOk] = useState(false);
@@ -33,11 +35,12 @@ export const RegistroManual: React.FC = () => {
     try {
       await apiClient.post('/eventos', {
         ...form,
+        usuario: user?.username ?? '',
         codigoBancal: form.codigoBancal.toUpperCase(),
         lectura: new Date(form.lectura).toISOString(),
       });
       setOk(true);
-      setForm(prev => ({ ...prev, codigoBancal: '', usuario: '' }));
+      setForm(prev => ({ ...prev, codigoBancal: '', observaciones: '' }));
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Error al registrar';
       setError(msg);
@@ -106,14 +109,28 @@ export const RegistroManual: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Operario / Usuario</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
           <input
-            name="usuario"
-            value={form.usuario}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
-            required
+            value={user?.username ?? ''}
+            readOnly
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-slate-500 cursor-not-allowed"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Observaciones <span className="text-slate-400 font-normal">(opcional)</span>
+          </label>
+          <textarea
+            name="observaciones"
+            value={form.observaciones}
+            onChange={e => setForm(prev => ({ ...prev, observaciones: e.target.value }))}
+            maxLength={100}
+            rows={2}
+            placeholder="Notas adicionales..."
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 resize-none"
+          />
+          <p className="text-xs text-slate-400 text-right mt-0.5">{form.observaciones.length}/100</p>
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}

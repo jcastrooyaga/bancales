@@ -14,7 +14,7 @@ export const createEventosRouter = (prisma: PrismaClient) => {
 
   router.post('/', async (req, res, next) => {
     try {
-      const { codigoBancal, tipo, codigoPlataforma, lectura, usuario } = req.body;
+      const { codigoBancal, tipo, codigoPlataforma, lectura, usuario, observaciones } = req.body;
 
       if (!codigoBancal || !tipo || !codigoPlataforma || !lectura || !usuario) {
         throw createError(400, 'Faltan campos requeridos');
@@ -66,6 +66,7 @@ export const createEventosRouter = (prisma: PrismaClient) => {
           tipo,
           lectura: fechaLectura,
           usuario,
+          observaciones: observaciones ? String(observaciones).slice(0, 100) : null,
           fuente: 'MANUAL',
         },
         include: { plataforma: { select: { codigo: true, nombre: true } } },

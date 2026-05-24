@@ -83,6 +83,7 @@ model Evento {
   tipo         TipoEvento
   lectura      DateTime
   usuario      String
+  observaciones String?
   fuente       FuenteEvento
   createdAt    DateTime     @default(now())
 
