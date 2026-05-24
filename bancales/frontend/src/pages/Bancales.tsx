@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,14 +33,14 @@ export const Bancales: React.FC = () => {
   return (
     <div>
       <h1 className="text-2xl font-bold text-brand mb-6">
-        {isPlataforma ? `Bancales â€” ${user?.plataformaCodigo}` : 'Listado de bancales'}
+        {isPlataforma ? `Bancales — ${user?.plataformaCodigo}` : 'Listado de bancales'}
       </h1>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
         <input
           type="text"
-          placeholder="Buscar cÃ³digo..."
+          placeholder="Buscar código..."
           value={q}
           onChange={e => setQ(e.target.value.toUpperCase())}
           className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none w-44"
@@ -75,11 +75,11 @@ export const Bancales: React.FC = () => {
           <table className="w-full text-sm">
             <thead className="bg-brand">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-white">CÃ³digo</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Código</th>
                 <th className="text-left px-4 py-3 font-medium text-white">Cliente</th>
                 <th className="text-left px-4 py-3 font-medium text-white">Plataforma actual</th>
-                <th className="text-left px-4 py-3 font-medium text-white">Ãšltima lectura</th>
-                <th className="text-right px-4 py-3 font-medium text-white">DÃ­as sin lectura</th>
+                <th className="text-left px-4 py-3 font-medium text-white">Última lectura</th>
+                <th className="text-right px-4 py-3 font-medium text-white">Días sin lectura</th>
                 <th className="text-left px-4 py-3 font-medium text-white">Estado</th>
               </tr>
             </thead>
@@ -97,13 +97,13 @@ export const Bancales: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-slate-600">
-                    {b.plataformaActual ? `${b.plataformaActual.codigo} Â· ${b.plataformaActual.nombre}` : 'â€”'}
+                    {b.plataformaActual ? `${b.plataformaActual.codigo} · ${b.plataformaActual.nombre}` : '—'}
                   </td>
                   <td className="px-4 py-2.5 text-slate-500 text-xs">
-                    {b.ultimaLectura ? new Date(b.ultimaLectura).toLocaleString('es-ES') : 'â€”'}
+                    {b.ultimaLectura ? new Date(b.ultimaLectura).toLocaleString('es-ES') : '—'}
                   </td>
                   <td className="px-4 py-2.5 text-right font-mono text-slate-600">
-                    {b.diasSinLectura ?? 'â€”'}
+                    {b.diasSinLectura ?? '—'}
                   </td>
                   <td className="px-4 py-2.5">
                     {b.enRiesgo ? (

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { Bancal, Evento } from '../types';
@@ -35,7 +35,7 @@ export const BancalHistorial: React.FC = () => {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">â† Volver</button>
+        <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">← Volver</button>
         <h1 className="text-2xl font-bold text-brand font-mono">{bancal.codigo}</h1>
         <span className={`text-xs px-2 py-0.5 rounded-full ${bancal.cliente === 'MICHELIN' ? 'bg-indigo-100 text-indigo-700' : 'bg-violet-100 text-violet-700'}`}>
           {bancal.cliente}
@@ -49,18 +49,18 @@ export const BancalHistorial: React.FC = () => {
         <div className="bg-white rounded-xl border p-4">
           <p className="text-xs text-slate-500">Plataforma actual</p>
           <p className="font-medium text-slate-800 mt-1">
-            {bancal.plataformaActual ? `${bancal.plataformaActual.codigo} Â· ${bancal.plataformaActual.nombre}` : 'â€”'}
+            {bancal.plataformaActual ? `${bancal.plataformaActual.codigo} · ${bancal.plataformaActual.nombre}` : '—'}
           </p>
         </div>
         <div className="bg-white rounded-xl border p-4">
-          <p className="text-xs text-slate-500">Ãšltima lectura</p>
+          <p className="text-xs text-slate-500">Última lectura</p>
           <p className="font-medium text-slate-800 mt-1">
-            {bancal.ultimaLectura ? new Date(bancal.ultimaLectura).toLocaleString('es-ES') : 'â€”'}
+            {bancal.ultimaLectura ? new Date(bancal.ultimaLectura).toLocaleString('es-ES') : '—'}
           </p>
         </div>
         <div className="bg-white rounded-xl border p-4">
-          <p className="text-xs text-slate-500">DÃ­as sin lectura</p>
-          <p className="font-medium text-slate-800 mt-1">{bancal.diasSinLectura ?? 'â€”'}</p>
+          <p className="text-xs text-slate-500">Días sin lectura</p>
+          <p className="font-medium text-slate-800 mt-1">{bancal.diasSinLectura ?? '—'}</p>
         </div>
       </div>
 
@@ -90,7 +90,7 @@ export const BancalHistorial: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-4 py-2.5 text-slate-700">
-                  {e.plataforma ? `${e.plataforma.codigo} Â· ${e.plataforma.nombre}` : 'â€”'}
+                  {e.plataforma ? `${e.plataforma.codigo} · ${e.plataforma.nombre}` : '—'}
                 </td>
                 <td className="px-4 py-2.5 text-slate-600">{e.usuario}</td>
                 <td className="px-4 py-2.5">

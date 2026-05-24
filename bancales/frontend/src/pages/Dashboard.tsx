@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { WeekSelector, currentWeek } from '../components/WeekSelector';
@@ -102,8 +102,8 @@ export const Dashboard: React.FC = () => {
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-white">Plataforma</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Inv. Real</th>
-                  <th className="text-right px-4 py-3 font-medium text-white">Inv. TeÃ³rico</th>
-                  <th className="text-right px-4 py-3 font-medium text-white">DesviaciÃ³n</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">Inv. Teórico</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">Desviación</th>
                   <th className="text-right px-4 py-3 font-medium text-white">En riesgo</th>
                 </tr>
               </thead>
@@ -128,7 +128,7 @@ export const Dashboard: React.FC = () => {
                     <td className="px-4 py-3 text-right">
                       {fila.bancalesRiesgo > 0 ? (
                         <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs">{fila.bancalesRiesgo}</span>
-                      ) : <span className="text-slate-400">â€”</span>}
+                      ) : <span className="text-slate-400">—</span>}
                     </td>
                   </tr>
                 ))}

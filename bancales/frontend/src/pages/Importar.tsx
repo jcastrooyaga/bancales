@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { apiClient } from '../api/client';
 import { ImportResult } from '../types';
 
@@ -62,7 +62,7 @@ export const Importar: React.FC = () => {
 
       {result && (
         <div className="mt-4 bg-white rounded-xl border p-6 space-y-4">
-          <h2 className="font-semibold text-slate-800">Resultado de la importaciÃ³n</h2>
+          <h2 className="font-semibold text-slate-800">Resultado de la importación</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-green-50 rounded-lg p-4 text-center">
               <p className="text-3xl font-bold text-green-700">{result.importados}</p>
