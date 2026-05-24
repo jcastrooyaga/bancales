@@ -81,7 +81,7 @@ export const Dashboard: React.FC = () => {
         <>
           {/* KPIs */}
           {(() => {
-            const totalDesviados = data.plataformas.reduce((sum, f) => sum + Math.abs(f.desviacion), 0);
+            const totalDesviados = data.plataformas.reduce((sum, f) => sum + f.desviacion, 0);
             return (
               <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                 {[
