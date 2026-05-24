@@ -182,12 +182,14 @@ export const PlataformaDetalle: React.FC<Props> = ({ overrideCodigo }) => {
     <div>
       {modal && <MovimientosModal title={modal.title} items={modal.items} onClose={() => setModal(null)} />}
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="bg-brand rounded-xl px-5 py-4 mb-6 flex items-center gap-4">
         {!overrideCodigo && (
-          <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-slate-800 text-sm">← Volver</button>
+          <button onClick={() => navigate(-1)} className="text-blue-200 hover:text-white text-sm shrink-0">← Volver</button>
         )}
-        <h1 className="text-2xl font-bold text-brand">{plataforma.codigo} · {plataforma.nombre}</h1>
-        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{plataforma.pais}</span>
+        <div>
+          <h1 className="text-xl font-bold text-white">{plataforma.codigo} · {plataforma.nombre}</h1>
+          <p className="text-xs text-blue-200 mt-0.5">{plataforma.pais}</p>
+        </div>
       </div>
 
       <div className="mb-4">
