@@ -80,20 +80,26 @@ export const Dashboard: React.FC = () => {
       {!loading && data && (
         <>
           {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            {[
-              { label: 'En circuito', value: data.kpis.totalEnCircuito, color: 'bg-slate-700 text-white' },
-              { label: 'Michelin', value: data.kpis.totalMichelin, color: 'bg-blue-600 text-white' },
-              { label: 'Continental', value: data.kpis.totalContinental, color: 'bg-orange-500 text-white' },
-              { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-red-800 text-white' },
-              { label: 'Plat. con desv.', value: data.kpis.plataformasDesviacion, color: 'bg-white text-red-800 ring-2 ring-red-800' },
-            ].map(k => (
-              <div key={k.label} className={`rounded-xl p-4 ${k.color}`}>
-                <p className="text-2xl font-bold">{k.value}</p>
-                <p className="text-xs mt-1 opacity-80">{k.label}</p>
+          {(() => {
+            const totalDesviados = data.plataformas.reduce((sum, f) => sum + Math.abs(f.desviacion), 0);
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+                {[
+                  { label: 'En circuito', value: data.kpis.totalEnCircuito, color: 'bg-slate-700 text-white' },
+                  { label: 'Michelin', value: data.kpis.totalMichelin, color: 'bg-blue-600 text-white' },
+                  { label: 'Continental', value: data.kpis.totalContinental, color: 'bg-orange-500 text-white' },
+                  { label: 'Bancales desv.', value: totalDesviados, color: 'bg-red-800 text-white' },
+                  { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-amber-600 text-red-900' },
+                  { label: 'Plat. con desv.', value: data.kpis.plataformasDesviacion, color: 'bg-white text-red-800 ring-2 ring-red-800' },
+                ].map(k => (
+                  <div key={k.label} className={`rounded-xl p-4 ${k.color}`}>
+                    <p className="text-2xl font-bold">{k.value}</p>
+                    <p className="text-xs mt-1 opacity-80">{k.label}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           {/* Platform table */}
           <div className="bg-white rounded-xl border overflow-hidden">
