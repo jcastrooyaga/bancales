@@ -87,12 +87,23 @@ export function nextWeek(w: WeekId): WeekId {
   return isoWeekOf(nextMonday);
 }
 
+export function buildManualCutoffFilter(manualCutoff?: Date | null) {
+  if (!manualCutoff) return {};
+  return {
+    OR: [
+      { fuente: 'IMPORTACION' as const },
+      { fuente: 'MANUAL' as const, lectura: { gte: manualCutoff } },
+    ],
+  };
+}
+
 export async function calcInventarioReal(
   prisma: PrismaClient,
   plataformaId: string,
   year: number,
   week: number,
-  cliente?: Cliente
+  cliente?: Cliente,
+  manualCutoff?: Date | null
 ): Promise<number> {
   const { cntsStart, cntsEnd } = getWeekBounds(year, week);
   const eventos = await prisma.evento.findMany({
@@ -101,6 +112,7 @@ export async function calcInventarioReal(
       tipo: 'CNTS',
       lectura: { gte: cntsStart, lte: cntsEnd },
       ...(cliente ? { bancal: { cliente } } : {}),
+      ...buildManualCutoffFilter(manualCutoff),
     },
     distinct: ['bancalId'],
     select: { bancalId: true },
@@ -113,22 +125,23 @@ export async function calcInventarioTeorico(
   plataformaId: string,
   year: number,
   week: number,
-  cliente?: Cliente
+  cliente?: Cliente,
+  manualCutoff?: Date | null
 ): Promise<number> {
   const prev = previousWeek({ year, week });
-  const inventarioRealPrev = await calcInventarioReal(prisma, plataformaId, prev.year, prev.week, cliente);
+  const inventarioRealPrev = await calcInventarioReal(prisma, plataformaId, prev.year, prev.week, cliente, manualCutoff);
   const { cntiStart, cntiEnd, cntoStart, cntoEnd } = getWeekBounds(year, week);
 
   const clienteFilter = cliente ? { bancal: { cliente } } : {};
+  const mcf = buildManualCutoffFilter(manualCutoff);
 
-  // Distinct bancal IDs, consistent with calcInventarioReal (distinct CNTS)
   const cntiEvts = await prisma.evento.findMany({
-    where: { plataformaId, tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, ...clienteFilter },
+    where: { plataformaId, tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, ...clienteFilter, ...mcf },
     select: { bancalId: true },
     distinct: ['bancalId'],
   });
   const cntoEvts = await prisma.evento.findMany({
-    where: { plataformaId, tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, ...clienteFilter },
+    where: { plataformaId, tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, ...clienteFilter, ...mcf },
     select: { bancalId: true },
     distinct: ['bancalId'],
   });

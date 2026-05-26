@@ -60,7 +60,7 @@ export const Configuracion: React.FC = () => {
     setVaciarLoading(true);
     setVaciarError('');
     try {
-      await apiClient.delete('/configuracion/vaciar-bd');
+      await apiClient.delete('/configuracion/limpiar-bd');
       setVaciarOk(true);
       setVaciarStep('idle');
       setConfirmText('');
@@ -193,10 +193,10 @@ export const Configuracion: React.FC = () => {
       <div className="mt-8 bg-white rounded-xl border border-red-200 p-6">
         <h2 className="text-sm font-semibold text-red-700 mb-1">Zona peligrosa</h2>
         <p className="text-xs text-slate-500 mb-4">
-          Elimina todos los bancales y eventos de la base de datos. Esta acción es irreversible.
+          Elimina todos los eventos importados desde Excel y los bancales sin eventos manuales. Los eventos registrados manualmente se conservan.
         </p>
 
-        {vaciarOk && <p className="text-green-600 text-sm mb-3">Base de datos vaciada correctamente.</p>}
+        {vaciarOk && <p className="text-green-600 text-sm mb-3">Datos importados eliminados correctamente.</p>}
         {vaciarError && <p className="text-red-600 text-sm mb-3">{vaciarError}</p>}
 
         {vaciarStep === 'idle' && (
@@ -204,14 +204,14 @@ export const Configuracion: React.FC = () => {
             onClick={() => setVaciarStep('confirm1')}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
           >
-            Vaciar base de datos
+            Limpiar base de datos
           </button>
         )}
 
         {vaciarStep === 'confirm1' && (
           <div className="space-y-3">
             <p className="text-sm font-medium text-slate-700">
-              ¿Seguro que quieres eliminar todos los bancales y eventos? Esta acción no se puede deshacer.
+              ¿Seguro que quieres eliminar todos los datos importados desde Excel? Los registros manuales se conservarán.
             </p>
             <div className="flex gap-2">
               <button
@@ -249,7 +249,7 @@ export const Configuracion: React.FC = () => {
                 disabled={confirmText !== 'eliminar' || vaciarLoading}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40"
               >
-                {vaciarLoading ? 'Eliminando...' : 'Eliminar todo'}
+                {vaciarLoading ? 'Limpiando...' : 'Limpiar datos importados'}
               </button>
               <button
                 onClick={cancelVaciar}

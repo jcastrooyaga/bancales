@@ -11,6 +11,7 @@ import {
   previousWeek,
   formatWeek,
   getWeekBounds,
+  buildManualCutoffFilter,
 } from '../services/weekService';
 
 export const createPlataformasRouter = (prisma: PrismaClient) => {
@@ -74,10 +75,15 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const yearParam = String(req.query.year ?? currentWeek().year);
       const w = parseWeekParam(semanaParam, yearParam);
 
-      const cfgUmbral = await prisma.configuracion.findUnique({ where: { clave: 'umbral_bancal_perdido_semanas' } });
+      const [cfgUmbral, oldestImported] = await Promise.all([
+        prisma.configuracion.findUnique({ where: { clave: 'umbral_bancal_perdido_semanas' } }),
+        prisma.evento.findFirst({ where: { fuente: 'IMPORTACION' }, orderBy: { lectura: 'asc' }, select: { lectura: true } }),
+      ]);
       const umbral = parseInt(cfgUmbral?.valor ?? '4');
       const threshold = new Date();
       threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
+      const manualCutoff = oldestImported?.lectura ?? null;
+      const mcf = buildManualCutoffFilter(manualCutoff);
 
       const bounds = getWeekBounds(w.year, w.week);
       const prevW = previousWeek(w);
@@ -88,22 +94,22 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const [prevCntsRaw, cntiRaw, cntoRaw, cntsRaw] = await Promise.all([
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
-            lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd } },
+            lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTI',
-            lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd } },
+            lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTO',
-            lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd } },
+            lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
-            lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd } },
+            lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
       ]);
@@ -216,6 +222,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
             bancalId: { in: sobranteCandidateIds },
             plataformaId: { not: plataforma.id },
             lectura: { gte: bounds.cntiStart, lte: bounds.cntsEnd },
+            ...mcf,
           },
           select: { bancalId: true },
           distinct: ['bancalId'],
@@ -236,7 +243,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
 
       // --- Bancales en riesgo (current global state, independent of selected week) ---
       const allEvtsHere = await prisma.evento.findMany({
-        where: { plataformaId: plataforma.id },
+        where: { plataformaId: plataforma.id, ...mcf },
         select: { bancalId: true, tipo: true, lectura: true },
         orderBy: { lectura: 'asc' },
       });
@@ -262,14 +269,14 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         const prev = previousWeek(cur);
         const bounds = getWeekBounds(cur.year, cur.week);
         const [real, prevReal, cntiEvts, cntoEvts] = await Promise.all([
-          calcInventarioReal(prisma, plataforma.id, cur.year, cur.week),
-          calcInventarioReal(prisma, plataforma.id, prev.year, prev.week),
+          calcInventarioReal(prisma, plataforma.id, cur.year, cur.week, undefined, manualCutoff),
+          calcInventarioReal(prisma, plataforma.id, prev.year, prev.week, undefined, manualCutoff),
           prisma.evento.findMany({
-            where: { plataformaId: plataforma.id, tipo: 'CNTI', lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd } },
+            where: { plataformaId: plataforma.id, tipo: 'CNTI', lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd }, ...mcf },
             select: { bancalId: true }, distinct: ['bancalId'],
           }),
           prisma.evento.findMany({
-            where: { plataformaId: plataforma.id, tipo: 'CNTO', lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd } },
+            where: { plataformaId: plataforma.id, tipo: 'CNTO', lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd }, ...mcf },
             select: { bancalId: true }, distinct: ['bancalId'],
           }),
         ]);

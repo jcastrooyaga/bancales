@@ -8,6 +8,7 @@ import {
   isoWeekOf,
   previousWeek,
   getWeekBounds,
+  buildManualCutoffFilter,
 } from '../services/weekService';
 
 export const createDashboardRouter = (prisma: PrismaClient) => {
@@ -41,12 +42,15 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
 
       const w = parseWeekParam(semanaParam, yearParam);
 
-      const cfgUmbral = await prisma.configuracion.findUnique({
-        where: { clave: 'umbral_bancal_perdido_semanas' },
-      });
+      const [cfgUmbral, oldestImported] = await Promise.all([
+        prisma.configuracion.findUnique({ where: { clave: 'umbral_bancal_perdido_semanas' } }),
+        prisma.evento.findFirst({ where: { fuente: 'IMPORTACION' }, orderBy: { lectura: 'asc' }, select: { lectura: true } }),
+      ]);
       const umbral = parseInt(cfgUmbral?.valor ?? '4');
       const threshold = new Date();
       threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
+      const manualCutoff = oldestImported?.lectura ?? null;
+      const mcf = buildManualCutoffFilter(manualCutoff);
 
       const plataformas = await prisma.plataforma.findMany({
         where: { activa: true },
@@ -61,14 +65,14 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
         plataformas.map(async p => {
           const clienteFilter = cliente ? { bancal: { cliente } } : {};
           const [real, prevReal, cntiEvts, cntoEvts] = await Promise.all([
-            calcInventarioReal(prisma, p.id, w.year, w.week, cliente),
-            calcInventarioReal(prisma, p.id, prev.year, prev.week, cliente),
+            calcInventarioReal(prisma, p.id, w.year, w.week, cliente, manualCutoff),
+            calcInventarioReal(prisma, p.id, prev.year, prev.week, cliente, manualCutoff),
             prisma.evento.findMany({
-              where: { plataformaId: p.id, tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, ...clienteFilter },
+              where: { plataformaId: p.id, tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, ...clienteFilter, ...mcf },
               select: { bancalId: true }, distinct: ['bancalId'],
             }),
             prisma.evento.findMany({
-              where: { plataformaId: p.id, tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, ...clienteFilter },
+              where: { plataformaId: p.id, tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, ...clienteFilter, ...mcf },
               select: { bancalId: true }, distinct: ['bancalId'],
             }),
           ]);
@@ -79,7 +83,7 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
 
           // Match detail page logic: exclude bancals whose last event at this platform is CNTO
           const allEvtsHere = await prisma.evento.findMany({
-            where: { plataformaId: p.id },
+            where: { plataformaId: p.id, ...mcf },
             select: { bancalId: true, tipo: true },
             orderBy: { lectura: 'asc' },
           });

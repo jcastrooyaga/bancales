@@ -14,10 +14,11 @@ export const createConfiguracionRouter = (prisma: PrismaClient) => {
     } catch (err) { next(err); }
   });
 
-  router.delete('/vaciar-bd', async (_req, res, next) => {
+  router.delete('/limpiar-bd', async (_req, res, next) => {
     try {
-      await prisma.evento.deleteMany();
-      await prisma.bancal.deleteMany();
+      await prisma.evento.deleteMany({ where: { fuente: 'IMPORTACION' } });
+      // Remove bancals that have no events remaining after cleaning imported ones
+      await prisma.bancal.deleteMany({ where: { eventos: { none: {} } } });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });
