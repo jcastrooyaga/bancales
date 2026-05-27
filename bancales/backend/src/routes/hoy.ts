@@ -70,6 +70,8 @@ export const createHoyRouter = (prisma: PrismaClient) => {
         return {
           plataforma: { id: p.id, codigo: p.codigo, nombre: p.nombre, pais: p.pais },
           count: bancalesDetalle.length,
+          countMichelin: bancalesDetalle.filter(b => b.cliente === 'MICHELIN').length,
+          countContinental: bancalesDetalle.filter(b => b.cliente === 'CONTINENTAL').length,
           ultimaLectura,
           bancales: bancalesDetalle,
         };

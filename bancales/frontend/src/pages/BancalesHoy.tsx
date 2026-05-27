@@ -12,6 +12,8 @@ interface BancalHoy {
 interface FilaHoy {
   plataforma: { id: string; codigo: string; nombre: string; pais: string };
   count: number;
+  countMichelin: number;
+  countContinental: number;
   ultimaLectura: string | null;
   bancales: BancalHoy[];
 }
@@ -60,6 +62,8 @@ export const BancalesHoy: React.FC = () => {
           <thead className="bg-brand text-white">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Plataforma</th>
+              <th className="text-right px-4 py-3 font-medium hidden sm:table-cell">Michelin</th>
+              <th className="text-right px-4 py-3 font-medium hidden sm:table-cell">Continental</th>
               <th className="text-right px-4 py-3 font-medium">Bancales</th>
               <th className="text-right px-4 py-3 font-medium hidden sm:table-cell">Última lectura</th>
               <th className="w-8"></th>
@@ -78,13 +82,15 @@ export const BancalesHoy: React.FC = () => {
                       <span className="font-semibold text-brand">{fila.plataforma.codigo}</span>
                       <span className="text-slate-500 ml-2 hidden sm:inline">{fila.plataforma.nombre}</span>
                     </td>
+                    <td className="px-4 py-3 text-right font-mono text-blue-700 hidden sm:table-cell">{fila.countMichelin}</td>
+                    <td className="px-4 py-3 text-right font-mono text-orange-600 hidden sm:table-cell">{fila.countContinental}</td>
                     <td className="px-4 py-3 text-right font-mono font-bold text-slate-800">{fila.count}</td>
                     <td className="px-4 py-3 text-right text-slate-500 hidden sm:table-cell">{formatDate(fila.ultimaLectura)}</td>
                     <td className="px-4 py-3 text-center text-slate-400 text-xs select-none">{isOpen ? '▲' : '▼'}</td>
                   </tr>
                   {isOpen && (
                     <tr>
-                      <td colSpan={4} className="bg-slate-50 border-t px-6 py-3">
+                      <td colSpan={6} className="bg-slate-50 border-t px-6 py-3">
                         {fila.bancales.length === 0 ? (
                           <p className="text-slate-400 text-sm text-center py-2">Sin bancales registrados</p>
                         ) : (
