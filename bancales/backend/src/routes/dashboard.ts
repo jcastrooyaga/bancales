@@ -112,17 +112,41 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
         })
       );
 
-      // Global KPIs
-      const clienteFilter = cliente ? { cliente } : {};
-      const totalEnCircuito = await prisma.bancal.count({
-        where: { activo: true, ultimaLectura: { gte: threshold }, ...clienteFilter },
-      });
-      const totalMichelin = await prisma.bancal.count({
-        where: { cliente: 'MICHELIN', activo: true, ultimaLectura: { gte: threshold } },
-      });
-      const totalContinental = await prisma.bancal.count({
-        where: { cliente: 'CONTINENTAL', activo: true, ultimaLectura: { gte: threshold } },
-      });
+      // Global KPIs — derived from the selected week's data, not from ultimaLectura
+      const prevBounds = getWeekBounds(prev.year, prev.week);
+      const [
+        prevMichelinEvts, prevContinentalEvts,
+        cntiMichelinEvts, cntiContinentalEvts,
+        cntoMichelinEvts, cntoContinentalEvts,
+      ] = await Promise.all([
+        prisma.evento.findMany({
+          where: { tipo: 'CNTS', lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd }, bancal: { cliente: 'MICHELIN' }, ...mcf },
+          select: { bancalId: true, plataformaId: true }, distinct: ['bancalId', 'plataformaId'],
+        }),
+        prisma.evento.findMany({
+          where: { tipo: 'CNTS', lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd }, bancal: { cliente: 'CONTINENTAL' }, ...mcf },
+          select: { bancalId: true, plataformaId: true }, distinct: ['bancalId', 'plataformaId'],
+        }),
+        prisma.evento.findMany({
+          where: { tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, bancal: { cliente: 'MICHELIN' }, ...mcf },
+          select: { bancalId: true, plataformaId: true }, distinct: ['bancalId', 'plataformaId'],
+        }),
+        prisma.evento.findMany({
+          where: { tipo: 'CNTI', lectura: { gte: cntiStart, lte: cntiEnd }, bancal: { cliente: 'CONTINENTAL' }, ...mcf },
+          select: { bancalId: true, plataformaId: true }, distinct: ['bancalId', 'plataformaId'],
+        }),
+        prisma.evento.findMany({
+          where: { tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, bancal: { cliente: 'MICHELIN' }, ...mcf },
+          select: { bancalId: true, plataformaId: true }, distinct: ['bancalId', 'plataformaId'],
+        }),
+        prisma.evento.findMany({
+          where: { tipo: 'CNTO', lectura: { gte: cntoStart, lte: cntoEnd }, bancal: { cliente: 'CONTINENTAL' }, ...mcf },
+          select: { bancalId: true, plataformaId: true }, distinct: ['bancalId', 'plataformaId'],
+        }),
+      ]);
+      const totalMichelin = prevMichelinEvts.length + cntiMichelinEvts.length - cntoMichelinEvts.length;
+      const totalContinental = prevContinentalEvts.length + cntiContinentalEvts.length - cntoContinentalEvts.length;
+      const totalEnCircuito = filas.reduce((sum, f) => sum + f.invTeorico, 0);
       const plataformasDesviacion = filas.filter(f => f.desviacion !== 0).length;
       const totalRiesgo = filas.reduce((sum, f) => sum + f.bancalesRiesgo, 0);
 
