@@ -55,16 +55,15 @@ function endOfDay(d: Date): Date {
 export function getWeekBounds(year: number, week: number) {
   const monday = getMondayOfWeek(year, week);
   const thursday = addDays(monday, 3);  // jueves semana actual (día de inventario CNTS)
-  const wednesday = addDays(monday, 2); // miércoles semana actual
   const prevFriday = addDays(monday, -3); // viernes semana anterior
 
   return {
-    // Movimientos semana N: viernes W_{N-1} 00:00 → miércoles W_N 23:59
-    // El jueves es exclusivo para inventario (CNTS): no se cuentan CNTI/CNTO ese día
+    // Movimientos semana N: viernes W_{N-1} 00:00 → jueves W_N 23:59
+    // Se incluyen CNTI previos al inventario y CNTO posteriores al inventario del jueves
     cntiStart: startOfDay(prevFriday),
-    cntiEnd: endOfDay(wednesday),
+    cntiEnd: endOfDay(thursday),
     cntoStart: startOfDay(prevFriday),
-    cntoEnd: endOfDay(wednesday),
+    cntoEnd: endOfDay(thursday),
     // CNTS: todo el día del jueves actual
     cntsStart: startOfDay(thursday),
     cntsEnd: endOfDay(thursday),
