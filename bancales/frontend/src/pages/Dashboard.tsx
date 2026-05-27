@@ -110,8 +110,8 @@ export const Dashboard: React.FC = () => {
                   <th className="text-right px-4 py-3 font-medium text-white">Inv. S-1</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Entradas</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Salidas</th>
-                  <th className="text-right px-4 py-3 font-medium text-white">Inv. Real</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Inv. Teórico</th>
+                  <th className="text-right px-4 py-3 font-medium text-white">Inv. Real</th>
                   <th className="text-right px-4 py-3 font-medium text-white">Desviación</th>
                   <th className="text-right px-4 py-3 font-medium text-white">% Error</th>
                   <th className="text-right px-4 py-3 font-medium text-white">En riesgo</th>
@@ -131,8 +131,8 @@ export const Dashboard: React.FC = () => {
                     <td className="px-4 py-3 text-right font-mono text-slate-500">{fila.prevReal}</td>
                     <td className="px-4 py-3 text-right font-mono text-green-700">+{fila.cntiCount}</td>
                     <td className="px-4 py-3 text-right font-mono text-orange-600">-{fila.cntoCount}</td>
-                    <td className="px-4 py-3 text-right font-mono">{fila.invReal}</td>
                     <td className="px-4 py-3 text-right font-mono">{fila.invTeorico}</td>
+                    <td className="px-4 py-3 text-right font-mono">{fila.invReal}</td>
                     <td className="px-4 py-3 text-right font-mono font-semibold">
                       <span className={fila.desviacion < 0 ? 'text-red-600' : fila.desviacion > 0 ? 'text-green-600' : 'text-slate-500'}>
                         {fila.desviacion > 0 ? '+' : ''}{fila.desviacion}
