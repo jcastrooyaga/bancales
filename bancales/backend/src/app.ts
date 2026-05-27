@@ -12,6 +12,7 @@ import { createEventosRouter } from './routes/eventos';
 import { createImportarRouter } from './routes/importar';
 import { createConfiguracionRouter } from './routes/configuracion';
 import { createHistoricoRouter } from './routes/historico';
+import { createHoyRouter } from './routes/hoy';
 
 export const createApp = (prisma: PrismaClient) => {
   const app = express();
@@ -30,6 +31,7 @@ export const createApp = (prisma: PrismaClient) => {
   app.use('/api/importar', authenticate, requireAdmin, createImportarRouter(prisma));
   app.use('/api/configuracion', authenticate, requireAdmin, createConfiguracionRouter(prisma));
   app.use('/api/historico', authenticate, createHistoricoRouter(prisma));
+  app.use('/api/hoy', authenticate, requireAdmin, createHoyRouter(prisma));
 
   app.use(errorHandler);
 

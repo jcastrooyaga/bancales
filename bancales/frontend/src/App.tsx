@@ -13,6 +13,7 @@ import { RegistroManual } from './pages/RegistroManual';
 import { Plataformas } from './pages/Plataformas';
 import { Configuracion } from './pages/Configuracion';
 import { Historico } from './pages/Historico';
+import { BancalesHoy } from './pages/BancalesHoy';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -40,6 +41,7 @@ const AppRoutes: React.FC = () => (
     <Route path="/" element={<HomeRedirect />} />
     <Route path="/mi-plataforma" element={<RequireAuth><Layout><MiPlataforma /></Layout></RequireAuth>} />
     <Route path="/plataforma/:codigo" element={<RequireAdmin><Layout><PlataformaDetalle /></Layout></RequireAdmin>} />
+    <Route path="/bancales-hoy" element={<RequireAdmin><Layout><BancalesHoy /></Layout></RequireAdmin>} />
     <Route path="/historico" element={<RequireAuth><Layout><Historico /></Layout></RequireAuth>} />
     <Route path="/bancales" element={<RequireAuth><Layout><Bancales /></Layout></RequireAuth>} />
     <Route path="/bancales/:codigo" element={<RequireAuth><Layout><BancalHistorial /></Layout></RequireAuth>} />

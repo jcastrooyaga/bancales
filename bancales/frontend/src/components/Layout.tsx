@@ -5,6 +5,7 @@ import logoUrl from '../../logo_cat.jpg';
 
 const adminNavItems = [
   { path: '/', label: 'Dashboard' },
+  { path: '/bancales-hoy', label: 'Bancales hoy' },
   { path: '/historico', label: 'Histórico' },
   { path: '/bancales', label: 'Bancales' },
   { path: '/importar', label: 'Importar Excel' },
