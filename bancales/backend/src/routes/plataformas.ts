@@ -171,7 +171,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       let descuadre: { id: string; codigo: string; cliente: string; ultimaLectura: Date | null; motivo: 'ANTERIOR' | 'ENTRADA' }[] = [];
       if (descuadreIds.length > 0) {
         const rows = await prisma.bancal.findMany({
-          where: { id: { in: descuadreIds }, plataformaActualId: plataforma.id },
+          where: { id: { in: descuadreIds } },
           select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
           orderBy: { codigo: 'asc' },
         });
