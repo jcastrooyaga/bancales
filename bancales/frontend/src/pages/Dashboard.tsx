@@ -85,9 +85,9 @@ export const Dashboard: React.FC = () => {
             return (
               <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                 {[
-                  { label: 'En circuito', value: data.kpis.totalEnCircuito, color: 'bg-slate-700 text-white' },
-                  { label: 'Michelin', value: data.kpis.totalMichelin, color: 'bg-blue-600 text-white' },
-                  { label: 'Continental', value: data.kpis.totalContinental, color: 'bg-orange-500 text-white' },
+                  { label: 'En circuito en el periodo', value: data.kpis.totalEnCircuito, color: 'bg-slate-700 text-white' },
+                  { label: 'Michelin, en circuito en periodo', value: data.kpis.totalMichelin, color: 'bg-blue-600 text-white' },
+                  { label: 'Continental, en circuito en periodo', value: data.kpis.totalContinental, color: 'bg-orange-500 text-white' },
                   { label: 'Bancales desv.', value: totalDesviados, color: 'bg-red-800 text-white' },
                   { label: 'En riesgo', value: data.kpis.totalRiesgo, color: 'bg-yellow-400 text-red-900' },
                   { label: 'Plat. con desv.', value: data.kpis.plataformasDesviacion, color: 'bg-white text-red-800 ring-2 ring-red-800' },

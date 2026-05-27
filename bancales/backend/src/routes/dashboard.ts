@@ -47,7 +47,8 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
         prisma.evento.findFirst({ where: { fuente: 'IMPORTACION' }, orderBy: { lectura: 'asc' }, select: { lectura: true } }),
       ]);
       const umbral = parseInt(cfgUmbral?.valor ?? '4');
-      const threshold = new Date();
+      const { thursday } = getWeekBounds(w.year, w.week);
+      const threshold = new Date(thursday);
       threshold.setUTCDate(threshold.getUTCDate() - umbral * 7);
       const manualCutoff = oldestImported?.lectura ?? null;
       const mcf = buildManualCutoffFilter(manualCutoff);
