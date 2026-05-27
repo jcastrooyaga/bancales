@@ -250,16 +250,14 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const latestHereMap = new Map<string, string>();
       for (const e of allEvtsHere) latestHereMap.set(e.bancalId, e.tipo);
 
-      const candidatos = await prisma.bancal.findMany({
-        where: { plataformaActualId: plataforma.id },
-        select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
-        orderBy: { codigo: 'asc' },
-      });
+      const riesgoCandidateIds = [...latestHereMap.entries()]
+        .filter(([_, tipo]) => tipo !== 'CNTO')
+        .map(([id]) => id);
 
-      const bancalesRiesgo = candidatos
-        .filter(b => latestHereMap.get(b.id) !== 'CNTO'
-          && b.ultimaLectura !== null && b.ultimaLectura < threshold)
-        .map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }))
+      const bancalesRiesgo = (await prisma.bancal.findMany({
+        where: { id: { in: riesgoCandidateIds }, ultimaLectura: { lt: threshold }, activo: true },
+        select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
+      })).map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }))
         .sort((a, b) => (a.ultimaLectura?.getTime() ?? 0) - (b.ultimaLectura?.getTime() ?? 0));
 
       // --- Historico (last 12 weeks) ---

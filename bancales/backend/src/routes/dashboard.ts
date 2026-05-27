@@ -90,15 +90,14 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
           const latestHereMap = new Map<string, string>();
           for (const e of allEvtsHere) latestHereMap.set(e.bancalId, e.tipo);
 
-          const candidatos = await prisma.bancal.findMany({
-            where: {
-              plataformaActualId: p.id,
-              ultimaLectura: { lt: threshold },
-              ...(cliente ? { cliente } : {}),
-            },
+          const riesgoCandidateIds = [...latestHereMap.entries()]
+            .filter(([_, tipo]) => tipo !== 'CNTO')
+            .map(([id]) => id);
+          const riesgoRows = await prisma.bancal.findMany({
+            where: { id: { in: riesgoCandidateIds }, ultimaLectura: { lt: threshold }, activo: true, ...(cliente ? { cliente } : {}) },
             select: { id: true },
           });
-          const riesgo = candidatos.filter(b => latestHereMap.get(b.id) !== 'CNTO').length;
+          const riesgo = riesgoRows.length;
           return {
             plataforma: { id: p.id, codigo: p.codigo, nombre: p.nombre, pais: p.pais },
             invReal: real,
