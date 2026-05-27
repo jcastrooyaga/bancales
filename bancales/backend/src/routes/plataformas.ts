@@ -221,7 +221,8 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
           where: {
             bancalId: { in: sobranteCandidateIds },
             plataformaId: { not: plataforma.id },
-            lectura: { gte: bounds.cntiStart, lte: bounds.cntsEnd },
+            tipo: 'CNTS',
+            lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd },
             ...mcf,
           },
           select: { bancalId: true },
