@@ -198,9 +198,8 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         if (!cur || e.lectura > cur.lectura) bancalEvtMap.set(e.bancalId, { tipo: 'CNTS', lectura: e.lectura });
       }
 
-      // En plataforma = expectedIds ∪ cntsIds (expected + confirmed, covers both descuadre and sobrantes)
-      const bancalesInPlatformIds = new Set([...expectedIds, ...cntsIds]);
-      const bancalesEnPlataforma = [...bancalesInPlatformIds].map(id => {
+      // En plataforma = expectedIds (teórico), count == invTeorico. Sobrantes se muestran por separado.
+      const bancalesEnPlataforma = [...expectedIds].map(id => {
         const b = bancalesMap.get(id);
         const evt = bancalEvtMap.get(id);
         return {
