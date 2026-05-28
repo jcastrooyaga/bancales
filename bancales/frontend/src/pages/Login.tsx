@@ -27,7 +27,7 @@ export const Login: React.FC = () => {
         <div className="flex flex-col items-center mb-8">
           <img src={logoUrl} alt="CAT SA" className="h-20 w-20 mb-4 object-contain" />
           <h1 className="text-xl font-bold text-slate-800 text-center leading-tight">
-            Control Contenedores Transporte v1.0
+            Control Contenedores Transporte v1.1
           </h1>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
