@@ -110,7 +110,7 @@ export async function calcInventarioReal(
       plataformaId,
       tipo: 'CNTS',
       lectura: { gte: cntsStart, lte: cntsEnd },
-      ...(cliente ? { bancal: { cliente } } : {}),
+      bancal: { activo: true, ...(cliente ? { cliente } : {}) },
       ...buildManualCutoffFilter(manualCutoff),
     },
     distinct: ['bancalId'],

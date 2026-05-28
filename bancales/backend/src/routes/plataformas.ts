@@ -94,22 +94,22 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const [prevCntsRaw, cntiRaw, cntoRaw, cntsRaw] = await Promise.all([
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
-            lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd }, ...mcf },
+            lectura: { gte: prevBounds.cntsStart, lte: prevBounds.cntsEnd }, bancal: { activo: true }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTI',
-            lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd }, ...mcf },
+            lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd }, bancal: { activo: true }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTO',
-            lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd }, ...mcf },
+            lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd }, bancal: { activo: true }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
         prisma.evento.findMany({
           where: { plataformaId: plataforma.id, tipo: 'CNTS',
-            lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd }, ...mcf },
+            lectura: { gte: bounds.cntsStart, lte: bounds.cntsEnd }, bancal: { activo: true }, ...mcf },
           select: simpleSelect, orderBy: { lectura: 'asc' },
         }),
       ]);
@@ -133,7 +133,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
       const bancalesMap = new Map<string, { codigo: string; cliente: string }>();
       if (allIds.size > 0) {
         const bancales = await prisma.bancal.findMany({
-          where: { id: { in: [...allIds] } },
+          where: { id: { in: [...allIds] }, activo: true },
           select: { id: true, codigo: true, cliente: true },
         });
         bancales.forEach(b => bancalesMap.set(b.id, { codigo: b.codigo, cliente: b.cliente }));
@@ -243,7 +243,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
 
       // --- Bancales en riesgo (current global state, independent of selected week) ---
       const allEvtsHere = await prisma.evento.findMany({
-        where: { plataformaId: plataforma.id, ...mcf },
+        where: { plataformaId: plataforma.id, bancal: { activo: true }, ...mcf },
         select: { bancalId: true, tipo: true, lectura: true },
         orderBy: { lectura: 'asc' },
       });
@@ -270,11 +270,11 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
           calcInventarioReal(prisma, plataforma.id, cur.year, cur.week, undefined, manualCutoff),
           calcInventarioReal(prisma, plataforma.id, prev.year, prev.week, undefined, manualCutoff),
           prisma.evento.findMany({
-            where: { plataformaId: plataforma.id, tipo: 'CNTI', lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd }, ...mcf },
+            where: { plataformaId: plataforma.id, tipo: 'CNTI', lectura: { gte: bounds.cntiStart, lte: bounds.cntiEnd }, bancal: { activo: true }, ...mcf },
             select: { bancalId: true }, distinct: ['bancalId'],
           }),
           prisma.evento.findMany({
-            where: { plataformaId: plataforma.id, tipo: 'CNTO', lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd }, ...mcf },
+            where: { plataformaId: plataforma.id, tipo: 'CNTO', lectura: { gte: bounds.cntoStart, lte: bounds.cntoEnd }, bancal: { activo: true }, ...mcf },
             select: { bancalId: true }, distinct: ['bancalId'],
           }),
         ]);

@@ -113,12 +113,15 @@ export async function processImport(
         data: { bancalId: bancal.id, plataformaId, tipo, lectura, usuario, fuente: 'IMPORTACION' },
       });
 
-      // Update bancal last known location
+      // Update bancal — reactivate if was inactive, update location if newer reading
+      const updateData: Record<string, unknown> = {};
+      if (!bancal.activo) updateData.activo = true;
       if (!bancal.ultimaLectura || lectura > bancal.ultimaLectura) {
-        await prisma.bancal.update({
-          where: { id: bancal.id },
-          data: { ultimaLectura: lectura, plataformaActualId: plataformaId },
-        });
+        updateData.ultimaLectura = lectura;
+        updateData.plataformaActualId = plataformaId;
+      }
+      if (Object.keys(updateData).length > 0) {
+        await prisma.bancal.update({ where: { id: bancal.id }, data: updateData });
       }
 
       result.importados++;

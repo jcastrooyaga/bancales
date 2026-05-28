@@ -17,7 +17,7 @@ export const createHoyRouter = (prisma: PrismaClient) => {
       const [plataformas, allEvents] = await Promise.all([
         prisma.plataforma.findMany({ where: { activa: true }, orderBy: { codigo: 'asc' } }),
         prisma.evento.findMany({
-          where: { ...mcf },
+          where: { ...mcf, bancal: { activo: true } },
           select: { bancalId: true, plataformaId: true, tipo: true, lectura: true },
           orderBy: { lectura: 'asc' },
         }),

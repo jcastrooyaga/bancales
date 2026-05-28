@@ -72,11 +72,14 @@ export const createEventosRouter = (prisma: PrismaClient) => {
         include: { plataforma: { select: { codigo: true, nombre: true } } },
       });
 
+      const updateData: Record<string, unknown> = {};
+      if (!bancal.activo) updateData.activo = true;
       if (!bancal.ultimaLectura || fechaLectura > bancal.ultimaLectura) {
-        await prisma.bancal.update({
-          where: { id: bancal.id },
-          data: { ultimaLectura: fechaLectura, plataformaActualId: plataforma.id },
-        });
+        updateData.ultimaLectura = fechaLectura;
+        updateData.plataformaActualId = plataforma.id;
+      }
+      if (Object.keys(updateData).length > 0) {
+        await prisma.bancal.update({ where: { id: bancal.id }, data: updateData });
       }
 
       res.status(201).json(evento);

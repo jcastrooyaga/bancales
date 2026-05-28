@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { createError } from '../middleware/errorHandler';
+import { requireAdmin } from '../middleware/auth';
 
 export const createBancalesRouter = (prisma: PrismaClient) => {
   const router = Router();
@@ -39,6 +40,8 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       } else if (estado === 'activo') {
         where.ultimaLectura = { gte: threshold };
         where.activo = true;
+      } else if (estado === 'baja') {
+        where.activo = false;
       }
 
       const bancales = await prisma.bancal.findMany({
@@ -80,6 +83,26 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       });
 
       res.json({ bancal, eventos });
+    } catch (err) { next(err); }
+  });
+
+  router.patch('/:codigo/desactivar', requireAdmin, async (req, res, next) => {
+    try {
+      const bancal = await prisma.bancal.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });
+      if (!bancal) throw createError(404, 'Bancal no encontrado');
+      if (!bancal.activo) throw createError(409, 'El bancal ya está dado de baja');
+      await prisma.bancal.update({ where: { id: bancal.id }, data: { activo: false } });
+      res.json({ ok: true });
+    } catch (err) { next(err); }
+  });
+
+  router.patch('/:codigo/activar', requireAdmin, async (req, res, next) => {
+    try {
+      const bancal = await prisma.bancal.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });
+      if (!bancal) throw createError(404, 'Bancal no encontrado');
+      if (bancal.activo) throw createError(409, 'El bancal ya está activo');
+      await prisma.bancal.update({ where: { id: bancal.id }, data: { activo: true } });
+      res.json({ ok: true });
     } catch (err) { next(err); }
   });
 

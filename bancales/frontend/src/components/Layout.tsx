@@ -8,6 +8,7 @@ const adminNavItems = [
   { path: '/bancales-hoy', label: 'Bancales hoy' },
   { path: '/historico', label: 'Histórico' },
   { path: '/bancales', label: 'Bancales' },
+  { path: '/bajas', label: 'Bajas' },
   { path: '/importar', label: 'Importar Excel' },
   { path: '/registro-manual', label: 'Registro Manual' },
   { path: '/plataformas', label: 'Plataformas' },

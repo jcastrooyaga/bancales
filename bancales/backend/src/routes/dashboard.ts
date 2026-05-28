@@ -64,7 +64,7 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
 
       const filas = await Promise.all(
         plataformas.map(async p => {
-          const clienteFilter = cliente ? { bancal: { cliente } } : {};
+          const clienteFilter = { bancal: { activo: true as const, ...(cliente ? { cliente } : {}) } };
           const [real, prevReal, cntiEvts, cntoEvts] = await Promise.all([
             calcInventarioReal(prisma, p.id, w.year, w.week, cliente, manualCutoff),
             calcInventarioReal(prisma, p.id, prev.year, prev.week, cliente, manualCutoff),
@@ -114,18 +114,18 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
 
       // Global KPIs — cumulative distinct bancals seen from start of data up to end of selected week's Thursday
       const upTo = cntsEnd; // endOfDay(thursday) of selected week
-      const clienteFilterKpi = cliente ? { bancal: { cliente } } : {};
+      const clienteFilterKpi = { bancal: { activo: true as const, ...(cliente ? { cliente } : {}) } };
       const [ecEvts, michelinEvts, continentalEvts] = await Promise.all([
         prisma.evento.findMany({
           where: { lectura: { lte: upTo }, ...clienteFilterKpi, ...mcf },
           select: { bancalId: true }, distinct: ['bancalId'],
         }),
         prisma.evento.findMany({
-          where: { lectura: { lte: upTo }, bancal: { cliente: 'MICHELIN' }, ...mcf },
+          where: { lectura: { lte: upTo }, bancal: { cliente: 'MICHELIN', activo: true }, ...mcf },
           select: { bancalId: true }, distinct: ['bancalId'],
         }),
         prisma.evento.findMany({
-          where: { lectura: { lte: upTo }, bancal: { cliente: 'CONTINENTAL' }, ...mcf },
+          where: { lectura: { lte: upTo }, bancal: { cliente: 'CONTINENTAL', activo: true }, ...mcf },
           select: { bancalId: true }, distinct: ['bancalId'],
         }),
       ]);
