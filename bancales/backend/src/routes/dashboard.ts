@@ -95,7 +95,7 @@ export const createDashboardRouter = (prisma: PrismaClient) => {
             .filter(([_, tipo]) => tipo !== 'CNTO')
             .map(([id]) => id);
           const riesgoRows = await prisma.bancal.findMany({
-            where: { id: { in: riesgoCandidateIds }, ultimaLectura: { lt: threshold }, baja: { is: null }, ...(cliente ? { cliente } : {}) },
+            where: { id: { in: riesgoCandidateIds }, ultimaLectura: { lt: threshold }, baja: { is: null }, ultimoTipoEvento: { not: 'CNTO' }, ...(cliente ? { cliente } : {}) },
             select: { id: true },
           });
           const riesgo = riesgoRows.length;

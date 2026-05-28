@@ -162,6 +162,7 @@ export async function getBancalesEnRiesgo(
       plataformaActualId: plataformaId,
       baja: { is: null },
       ultimaLectura: { lt: threshold },
+      ultimoTipoEvento: { not: 'CNTO' },
       ...(cliente ? { cliente } : {}),
     },
   });

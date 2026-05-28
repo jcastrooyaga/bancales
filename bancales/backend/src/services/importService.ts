@@ -117,7 +117,7 @@ export async function processImport(
       if (!bancal.ultimaLectura || lectura > bancal.ultimaLectura) {
         await prisma.bancal.update({
           where: { id: bancal.id },
-          data: { ultimaLectura: lectura, plataformaActualId: plataformaId },
+          data: { ultimaLectura: lectura, plataformaActualId: plataformaId, ultimoTipoEvento: tipo },
         });
       }
       await prisma.bancalBaja.deleteMany({ where: { bancalId: bancal.id } });

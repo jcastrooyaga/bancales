@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 import { config } from './config';
 import { createApp } from './app';
-import { runSeedIfNeeded } from './seed';
+import { runSeedIfNeeded, backfillUltimoTipoEvento } from './seed';
 
 const prisma = new PrismaClient();
 
 async function main() {
   await runSeedIfNeeded(prisma);
+  await backfillUltimoTipoEvento(prisma);
   const app = createApp(prisma);
   app.listen(config.port, () => {
     console.log(`Bancales server running on port ${config.port}`);

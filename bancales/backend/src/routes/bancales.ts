@@ -37,6 +37,7 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       if (estado === 'riesgo') {
         where.ultimaLectura = { lt: threshold };
         where.baja = { is: null };
+        where.ultimoTipoEvento = { not: 'CNTO' };
       } else if (estado === 'activo') {
         where.ultimaLectura = { gte: threshold };
         where.baja = { is: null };
@@ -63,7 +64,7 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
         diasSinLectura: b.ultimaLectura
           ? Math.floor((now - b.ultimaLectura.getTime()) / 86400000)
           : null,
-        enRiesgo: b.ultimaLectura ? b.ultimaLectura < threshold : true,
+        enRiesgo: b.ultimaLectura ? b.ultimaLectura < threshold && b.ultimoTipoEvento !== 'CNTO' : false,
         enBaja: !!b.baja,
       }));
 

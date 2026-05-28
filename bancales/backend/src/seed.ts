@@ -74,3 +74,24 @@ export async function runSeedIfNeeded(prisma: PrismaClient): Promise<void> {
     console.log(`Created ${plataformas.length} platform users.`);
   }
 }
+
+export async function backfillUltimoTipoEvento(prisma: PrismaClient): Promise<void> {
+  const bancales = await prisma.bancal.findMany({
+    where: { ultimoTipoEvento: null },
+    select: { id: true },
+  });
+  if (bancales.length === 0) return;
+
+  console.log(`Backfilling ultimoTipoEvento for ${bancales.length} bancales...`);
+  for (const b of bancales) {
+    const latest = await prisma.evento.findFirst({
+      where: { bancalId: b.id },
+      orderBy: { lectura: 'desc' },
+      select: { tipo: true },
+    });
+    if (latest) {
+      await prisma.bancal.update({ where: { id: b.id }, data: { ultimoTipoEvento: latest.tipo } });
+    }
+  }
+  console.log('Backfill ultimoTipoEvento complete.');
+}

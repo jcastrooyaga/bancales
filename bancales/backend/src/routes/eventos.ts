@@ -75,7 +75,7 @@ export const createEventosRouter = (prisma: PrismaClient) => {
       if (!bancal.ultimaLectura || fechaLectura > bancal.ultimaLectura) {
         await prisma.bancal.update({
           where: { id: bancal.id },
-          data: { ultimaLectura: fechaLectura, plataformaActualId: plataforma.id },
+          data: { ultimaLectura: fechaLectura, plataformaActualId: plataforma.id, ultimoTipoEvento: tipo },
         });
       }
       await prisma.bancalBaja.deleteMany({ where: { bancalId: bancal.id } });

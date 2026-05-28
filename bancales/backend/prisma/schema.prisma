@@ -34,13 +34,14 @@ enum Rol {
 }
 
 model Bancal {
-  id                 String     @id @default(cuid())
-  codigo             String     @unique
+  id                 String      @id @default(cuid())
+  codigo             String      @unique
   cliente            Cliente
   plataformaActualId String?
   ultimaLectura      DateTime?
-  activo             Boolean    @default(true)
-  createdAt          DateTime   @default(now())
+  ultimoTipoEvento   TipoEvento?
+  activo             Boolean     @default(true)
+  createdAt          DateTime    @default(now())
 
   plataformaActual   Plataforma? @relation(fields: [plataformaActualId], references: [id])
   eventos            Evento[]

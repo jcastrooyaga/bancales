@@ -256,7 +256,7 @@ export const createPlataformasRouter = (prisma: PrismaClient) => {
         .map(([id]) => id);
 
       const bancalesRiesgo = (await prisma.bancal.findMany({
-        where: { id: { in: riesgoCandidateIds }, ultimaLectura: { lt: threshold }, baja: { is: null } },
+        where: { id: { in: riesgoCandidateIds }, ultimaLectura: { lt: threshold }, baja: { is: null }, ultimoTipoEvento: { not: 'CNTO' } },
         select: { id: true, codigo: true, cliente: true, ultimaLectura: true },
       })).map(b => ({ id: b.id, codigo: b.codigo, cliente: b.cliente as string, ultimaLectura: b.ultimaLectura }))
         .sort((a, b) => (a.ultimaLectura?.getTime() ?? 0) - (b.ultimaLectura?.getTime() ?? 0));
