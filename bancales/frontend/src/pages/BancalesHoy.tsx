@@ -50,6 +50,8 @@ export const BancalesHoy: React.FC = () => {
   if (error) return <div className="text-red-600 text-sm">{error}</div>;
 
   const total = plataformas.reduce((sum, f) => sum + f.count, 0);
+  const totalMichelin = plataformas.reduce((sum, f) => sum + f.countMichelin, 0);
+  const totalContinental = plataformas.reduce((sum, f) => sum + f.countContinental, 0);
 
   return (
     <div>
@@ -130,6 +132,16 @@ export const BancalesHoy: React.FC = () => {
               );
             })}
           </tbody>
+          <tfoot className="border-t-2 border-slate-300 bg-slate-50">
+            <tr>
+              <td className="px-4 py-3 text-sm font-semibold text-slate-600">Total</td>
+              <td className="px-4 py-3 text-right font-mono font-bold text-blue-700 hidden sm:table-cell">{totalMichelin}</td>
+              <td className="px-4 py-3 text-right font-mono font-bold text-orange-600 hidden sm:table-cell">{totalContinental}</td>
+              <td className="px-4 py-3 text-right font-mono font-bold text-slate-800">{total}</td>
+              <td className="hidden sm:table-cell"></td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
