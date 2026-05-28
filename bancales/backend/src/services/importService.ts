@@ -51,8 +51,8 @@ export async function processImport(
     try {
       const codigoBancal = String(row['BANCAL'] ?? '').trim().toUpperCase();
       const eventoRaw = String(row['EVENTO'] ?? '').trim().toUpperCase();
-      const platCodigo = String(row['PLAT'] ?? '').trim().toUpperCase();
-      const lecturaRaw = row['LECTURA'];
+      const platCodigo = String(row['PLAT'] ?? row['PLATAFORMA'] ?? '').trim().toUpperCase();
+      const lecturaRaw = row['LECTURA'] ?? row['FECHA'];
       const usuario = String(row['USUARIO'] ?? '').trim();
 
       if (!codigoBancal) { result.errores.push({ fila, motivo: 'Código de bancal vacío' }); continue; }
