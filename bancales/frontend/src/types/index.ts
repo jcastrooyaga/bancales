@@ -20,6 +20,7 @@ export interface Bancal {
   ultimaLectura: string | null;
   diasSinLectura: number | null;
   enRiesgo: boolean;
+  enBaja: boolean;
 }
 
 export interface Evento {

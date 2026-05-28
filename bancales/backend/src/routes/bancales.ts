@@ -46,7 +46,10 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
 
       const bancales = await prisma.bancal.findMany({
         where,
-        include: { plataformaActual: { select: { codigo: true, nombre: true } } },
+        include: {
+          plataformaActual: { select: { codigo: true, nombre: true } },
+          baja: { select: { id: true } },
+        },
         orderBy: { codigo: 'asc' },
       });
 
@@ -61,6 +64,7 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
           ? Math.floor((now - b.ultimaLectura.getTime()) / 86400000)
           : null,
         enRiesgo: b.ultimaLectura ? b.ultimaLectura < threshold : true,
+        enBaja: !!b.baja,
       }));
 
       res.json(data);

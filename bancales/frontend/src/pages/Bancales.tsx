@@ -62,6 +62,7 @@ export const Bancales: React.FC = () => {
           <option value="">Todos los estados</option>
           <option value="activo">Activo</option>
           <option value="riesgo">En riesgo</option>
+          <option value="baja">Baja</option>
         </select>
       </div>
 
@@ -106,7 +107,9 @@ export const Bancales: React.FC = () => {
                     {b.diasSinLectura ?? '—'}
                   </td>
                   <td className="px-4 py-2.5">
-                    {b.enRiesgo ? (
+                    {b.enBaja ? (
+                      <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Baja</span>
+                    ) : b.enRiesgo ? (
                       <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">En riesgo</span>
                     ) : (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Activo</span>
