@@ -6,18 +6,19 @@ import logoUrl from '../../logo_cat.jpg';
 const adminNavItems = [
   { path: '/', label: 'Dashboard' },
   { path: '/bancales-hoy', label: 'Bancales hoy' },
-  { path: '/historico', label: 'Histórico' },
+  { path: '/historico', label: 'Histórico de movimientos' },
   { path: '/bancales', label: 'Bancales' },
-  { path: '/bajas', label: 'Bajas' },
-  { path: '/importar', label: 'Importar Excel' },
+  { path: '', label: '', separator: true },
   { path: '/registro-manual', label: 'Registro Manual' },
+  { path: '/bajas', label: 'Gestionar bajas' },
+  { path: '/importar', label: 'Importar Excel' },
   { path: '/plataformas', label: 'Plataformas' },
   { path: '/configuracion', label: 'Configuración' },
 ];
 
 const plataformaNavItems = [
   { path: '/mi-plataforma', label: 'Mi Plataforma' },
-  { path: '/historico', label: 'Histórico' },
+  { path: '/historico', label: 'Histórico de movimientos' },
   { path: '/bancales', label: 'Bancales' },
   { path: '/configuracion', label: 'Configuración' },
 ];
@@ -49,7 +50,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Nav */}
         <nav className="mt-1 flex-1">
-          {navItems.map(item => {
+          {navItems.map((item, i) => {
+            if (item.separator) return <hr key={i} className="border-brand-dark my-1 mx-3" />;
             const active = item.path === '/'
               ? location.pathname === '/'
               : location.pathname.startsWith(item.path);
