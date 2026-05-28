@@ -17,7 +17,7 @@ export const createHoyRouter = (prisma: PrismaClient) => {
       const [plataformas, allEvents] = await Promise.all([
         prisma.plataforma.findMany({ where: { activa: true }, orderBy: { codigo: 'asc' } }),
         prisma.evento.findMany({
-          where: { ...mcf, bancal: { activo: true } },
+          where: { ...mcf, bancal: { baja: { is: null } } },
           select: { bancalId: true, plataformaId: true, tipo: true, lectura: true },
           orderBy: { lectura: 'asc' },
         }),
@@ -91,7 +91,7 @@ export const createHoyRouter = (prisma: PrismaClient) => {
       // Single batch fetch for all needed bancals
       const bancales = allExpectedIds.size > 0
         ? await prisma.bancal.findMany({
-            where: { id: { in: [...allExpectedIds] }, activo: true },
+            where: { id: { in: [...allExpectedIds] }, baja: { is: null } },
             select: { id: true, codigo: true, cliente: true },
           })
         : [];

@@ -113,16 +113,14 @@ export async function processImport(
         data: { bancalId: bancal.id, plataformaId, tipo, lectura, usuario, fuente: 'IMPORTACION' },
       });
 
-      // Update bancal — reactivate if was inactive, update location if newer reading
-      const updateData: Record<string, unknown> = {};
-      if (!bancal.activo) updateData.activo = true;
+      // Update bancal location if newer reading; auto-reactivate from BancalBaja if needed
       if (!bancal.ultimaLectura || lectura > bancal.ultimaLectura) {
-        updateData.ultimaLectura = lectura;
-        updateData.plataformaActualId = plataformaId;
+        await prisma.bancal.update({
+          where: { id: bancal.id },
+          data: { ultimaLectura: lectura, plataformaActualId: plataformaId },
+        });
       }
-      if (Object.keys(updateData).length > 0) {
-        await prisma.bancal.update({ where: { id: bancal.id }, data: updateData });
-      }
+      await prisma.bancalBaja.deleteMany({ where: { bancalId: bancal.id } });
 
       result.importados++;
     } catch (err) {

@@ -36,12 +36,12 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
       }
       if (estado === 'riesgo') {
         where.ultimaLectura = { lt: threshold };
-        where.activo = true;
+        where.baja = { is: null };
       } else if (estado === 'activo') {
         where.ultimaLectura = { gte: threshold };
-        where.activo = true;
+        where.baja = { is: null };
       } else if (estado === 'baja') {
-        where.activo = false;
+        where.baja = { isNot: null };
       }
 
       const bancales = await prisma.bancal.findMany({
@@ -88,20 +88,26 @@ export const createBancalesRouter = (prisma: PrismaClient) => {
 
   router.patch('/:codigo/desactivar', requireAdmin, async (req, res, next) => {
     try {
-      const bancal = await prisma.bancal.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });
+      const bancal = await prisma.bancal.findUnique({
+        where: { codigo: req.params.codigo.toUpperCase() },
+        include: { baja: true },
+      });
       if (!bancal) throw createError(404, 'Bancal no encontrado');
-      if (!bancal.activo) throw createError(409, 'El bancal ya está dado de baja');
-      await prisma.bancal.update({ where: { id: bancal.id }, data: { activo: false } });
+      if (bancal.baja) throw createError(409, 'El bancal ya está dado de baja');
+      await prisma.bancalBaja.create({ data: { bancalId: bancal.id } });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });
 
   router.patch('/:codigo/activar', requireAdmin, async (req, res, next) => {
     try {
-      const bancal = await prisma.bancal.findUnique({ where: { codigo: req.params.codigo.toUpperCase() } });
+      const bancal = await prisma.bancal.findUnique({
+        where: { codigo: req.params.codigo.toUpperCase() },
+        include: { baja: true },
+      });
       if (!bancal) throw createError(404, 'Bancal no encontrado');
-      if (bancal.activo) throw createError(409, 'El bancal ya está activo');
-      await prisma.bancal.update({ where: { id: bancal.id }, data: { activo: true } });
+      if (!bancal.baja) throw createError(409, 'El bancal ya está activo');
+      await prisma.bancalBaja.delete({ where: { bancalId: bancal.id } });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });

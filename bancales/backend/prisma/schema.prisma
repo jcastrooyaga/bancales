@@ -44,8 +44,19 @@ model Bancal {
 
   plataformaActual   Plataforma? @relation(fields: [plataformaActualId], references: [id])
   eventos            Evento[]
+  baja               BancalBaja?
 
   @@map("bancales")
+}
+
+model BancalBaja {
+  id        String   @id @default(cuid())
+  bancalId  String   @unique
+  fechaBaja DateTime @default(now())
+
+  bancal    Bancal   @relation(fields: [bancalId], references: [id])
+
+  @@map("bancales_baja")
 }
 
 model Plataforma {

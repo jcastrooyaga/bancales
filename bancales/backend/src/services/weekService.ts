@@ -110,7 +110,7 @@ export async function calcInventarioReal(
       plataformaId,
       tipo: 'CNTS',
       lectura: { gte: cntsStart, lte: cntsEnd },
-      bancal: { activo: true, ...(cliente ? { cliente } : {}) },
+      bancal: { baja: { is: null }, ...(cliente ? { cliente } : {}) },
       ...buildManualCutoffFilter(manualCutoff),
     },
     distinct: ['bancalId'],
@@ -160,7 +160,7 @@ export async function getBancalesEnRiesgo(
   return prisma.bancal.count({
     where: {
       plataformaActualId: plataformaId,
-      activo: true,
+      baja: { is: null },
       ultimaLectura: { lt: threshold },
       ...(cliente ? { cliente } : {}),
     },
