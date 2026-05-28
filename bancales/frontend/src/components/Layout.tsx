@@ -3,7 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logoUrl from '../../logo_cat.jpg';
 
-const adminNavItems = [
+type NavItem = { path: string; label: string; separator?: boolean };
+
+const adminNavItems: NavItem[] = [
   { path: '/', label: 'Dashboard' },
   { path: '/bancales-hoy', label: 'Bancales hoy' },
   { path: '/historico', label: 'Histórico de movimientos' },
@@ -16,7 +18,7 @@ const adminNavItems = [
   { path: '/configuracion', label: 'Configuración' },
 ];
 
-const plataformaNavItems = [
+const plataformaNavItems: NavItem[] = [
   { path: '/mi-plataforma', label: 'Mi Plataforma' },
   { path: '/historico', label: 'Histórico de movimientos' },
   { path: '/bancales', label: 'Bancales' },
