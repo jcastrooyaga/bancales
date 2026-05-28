@@ -30,11 +30,40 @@ export const Bancales: React.FC = () => {
 
   useEffect(() => { fetchBancales(); }, [fetchBancales]);
 
+  const exportCSV = () => {
+    const headers = ['Código', 'Cliente', 'Plataforma', 'Última lectura', 'Días sin lectura', 'Estado'];
+    const rows = bancales.map(b => [
+      b.codigo,
+      b.cliente,
+      b.plataformaActual ? `${b.plataformaActual.codigo} · ${b.plataformaActual.nombre}` : '',
+      b.ultimaLectura ? new Date(b.ultimaLectura).toLocaleString('es-ES') : '',
+      b.diasSinLectura ?? '',
+      b.enBaja ? 'Baja' : b.enRiesgo ? 'En riesgo' : 'Activo',
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bancales_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-brand mb-6">
-        {isPlataforma ? `Bancales — ${user?.plataformaCodigo}` : 'Listado de bancales'}
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-brand">
+          {isPlataforma ? `Bancales — ${user?.plataformaCodigo}` : 'Listado de bancales'}
+        </h1>
+        <button
+          onClick={exportCSV}
+          disabled={loading || bancales.length === 0}
+          className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-40 transition-colors"
+        >
+          Exportar CSV
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
