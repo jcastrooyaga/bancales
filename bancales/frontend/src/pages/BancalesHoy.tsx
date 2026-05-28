@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
+import { currentWeek } from '../components/WeekSelector';
 
 interface BancalHoy {
   id: string;
@@ -52,9 +53,12 @@ export const BancalesHoy: React.FC = () => {
 
   return (
     <div>
-      <div className="flex items-baseline gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-brand">Bancales hoy</h1>
-        <span className="text-sm text-slate-500">{total} bancales en circuito</span>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-baseline gap-4">
+          <h1 className="text-2xl font-bold text-brand">Bancales hoy</h1>
+          <span className="text-sm text-slate-500">{total} bancales en circuito</span>
+        </div>
+        <span className="text-sm text-slate-500">Hoy es semana {`W${String(currentWeek().week).padStart(2, '0')}`}</span>
       </div>
 
       <div className="bg-white rounded-xl border overflow-hidden">

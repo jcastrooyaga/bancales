@@ -10,6 +10,16 @@ const clienteOptions = [
   { value: 'CONTINENTAL', label: 'Continental' },
 ];
 
+const cw = currentWeek();
+const cwLabel = `W${String(cw.week).padStart(2, '0')}`;
+
+function diasHastaJueves(): number | null {
+  const dow = new Date().getDay(); // 0=Dom,1=Lun,...,4=Jue,5=Vie,6=Sáb
+  if (dow === 4) return 0;
+  if (dow === 0 || dow >= 5) return null;
+  return 4 - dow; // Lun→3, Mar→2, Mié→1
+}
+
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -61,9 +71,10 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
         <h1 className="text-2xl font-bold text-brand">Dashboard</h1>
         <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm text-slate-500">Hoy es semana {cwLabel}</span>
           <WeekSelector value={week} onChange={setWeek} />
           <select
             value={cliente}
@@ -74,6 +85,18 @@ export const Dashboard: React.FC = () => {
           </select>
         </div>
       </div>
+      {(() => {
+        const isCurrentWeek = week.week === cw.week && week.year === cw.year;
+        const dias = diasHastaJueves();
+        if (!isCurrentWeek || dias === null) return null;
+        return (
+          <p className="text-sm text-right mb-4 text-amber-600 font-medium">
+            {dias === 0
+              ? 'Hoy debe hacerse inventario'
+              : `Quedan ${dias} día${dias !== 1 ? 's' : ''} laborable${dias !== 1 ? 's' : ''} hasta inventario`}
+          </p>
+        );
+      })()}
 
       {loading && <div className="text-slate-500 text-sm">Calculando inventarios...</div>}
 
