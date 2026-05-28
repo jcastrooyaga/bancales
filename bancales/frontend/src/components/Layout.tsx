@@ -42,7 +42,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <img src={logoUrl} alt="CAT SA" className="h-9 w-9 object-contain flex-shrink-0 rounded" />
             <div className="min-w-0">
               <p className="text-sm font-bold leading-tight text-white">Control Contenedores</p>
-              <p className="text-sm font-bold leading-tight text-white">de Transporte v1.0</p>
+              <p className="text-sm font-bold leading-tight text-white">de Transporte v1.1</p>
             </div>
           </div>
           <button className="md:hidden text-blue-200 hover:text-white" onClick={() => setSidebarOpen(false)}>✕</button>
