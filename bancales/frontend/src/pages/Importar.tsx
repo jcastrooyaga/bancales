@@ -20,10 +20,17 @@ export const Importar: React.FC = () => {
       form.append('file', file);
       const { data } = await apiClient.post<ImportResult>('/importar', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000,
       });
       setResult(data);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Error al importar';
+      const axiosErr = err as { code?: string; response?: { data?: { error?: string } } };
+      let msg = 'Error al importar';
+      if (axiosErr.code === 'ECONNABORTED') {
+        msg = 'La importación tardó demasiado. Inténtalo con un fichero más pequeño o contacta con soporte.';
+      } else if (axiosErr.response?.data?.error) {
+        msg = axiosErr.response.data.error;
+      }
       setError(msg);
     } finally {
       setLoading(false);
