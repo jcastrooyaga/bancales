@@ -16,9 +16,23 @@ export const createConfiguracionRouter = (prisma: PrismaClient) => {
 
   router.delete('/limpiar-bd', async (_req, res, next) => {
     try {
-      await prisma.evento.deleteMany({ where: { fuente: 'IMPORTACION' } });
-      // Remove bancals that have no events remaining after cleaning imported ones
-      await prisma.bancal.deleteMany({ where: { eventos: { none: {} } } });
+      // Protect events that were moved via an association (asociacionId IS NOT NULL)
+      await prisma.evento.deleteMany({ where: { fuente: 'IMPORTACION', asociacionId: null } });
+      // Remove bancals with no events, but never remove bancals involved in an association
+      const asociacionBancalIds = await prisma.bancalAsociacion.findMany({
+        select: { originalId: true, finalBancalId: true },
+      });
+      const protectedIds = new Set<string>();
+      for (const a of asociacionBancalIds) {
+        protectedIds.add(a.originalId);
+        protectedIds.add(a.finalBancalId);
+      }
+      await prisma.bancal.deleteMany({
+        where: {
+          eventos: { none: {} },
+          id: { notIn: [...protectedIds] },
+        },
+      });
       res.json({ ok: true });
     } catch (err) { next(err); }
   });

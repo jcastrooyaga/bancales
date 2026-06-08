@@ -4,6 +4,7 @@ import { PrismaClient, Cliente, TipoEvento } from '@prisma/client';
 interface ImportResult {
   importados: number;
   duplicados: number;
+  asociadosIgnorados: number;
   errores: { fila: number; motivo: string }[];
 }
 
@@ -29,11 +30,14 @@ export async function processImport(
   const sheet = workbook.Sheets['LECTURAS'] ?? workbook.Sheets[workbook.SheetNames[0]];
   const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
-  const result: ImportResult = { importados: 0, duplicados: 0, errores: [] };
+  const result: ImportResult = { importados: 0, duplicados: 0, asociadosIgnorados: 0, errores: [] };
 
-  const [cfgVentana] = await Promise.all([
+  const [cfgVentana, asociaciones] = await Promise.all([
     prisma.configuracion.findUnique({ where: { clave: 'ventana_deduplicacion_minutos' } }),
+    prisma.bancalAsociacion.findMany({ select: { originalCodigo: true, fechaAsociacion: true } }),
   ]);
+  // Map original code → fechaAsociacion for O(1) lookup
+  const asociacionMap = new Map<string, Date>(asociaciones.map(a => [a.originalCodigo, a.fechaAsociacion]));
   const ventanaMin = parseInt(cfgVentana?.valor ?? '180');
   const ventanaMs = ventanaMin * 60 * 1000;
 
@@ -64,6 +68,20 @@ export async function processImport(
       const usuario = String(row['USUARIO'] ?? '').trim();
 
       if (!codigoBancal) { result.errores.push({ fila, motivo: 'Código de bancal vacío' }); continue; }
+
+      // Skip rows whose bancal was associated and the reading date is before/on the association date
+      const fechaAsocOrigen = asociacionMap.get(codigoBancal);
+      if (fechaAsocOrigen) {
+        let lecturaCheck: Date | null = null;
+        const lecturaRawCheck = row['LECTURA'] ?? row['FECHA'];
+        if (typeof lecturaRawCheck === 'number') lecturaCheck = excelDateToJS(lecturaRawCheck);
+        else if (lecturaRawCheck instanceof Date) lecturaCheck = lecturaRawCheck;
+        else if (lecturaRawCheck) lecturaCheck = new Date(String(lecturaRawCheck));
+        if (lecturaCheck && !isNaN(lecturaCheck.getTime()) && lecturaCheck <= fechaAsocOrigen) {
+          result.asociadosIgnorados++;
+          continue;
+        }
+      }
       if (!VALID_TIPOS.includes(eventoRaw as TipoEvento)) {
         result.errores.push({ fila, motivo: `Tipo de evento inválido: ${eventoRaw}` }); continue;
       }

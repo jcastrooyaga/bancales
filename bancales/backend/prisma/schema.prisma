@@ -43,9 +43,11 @@ model Bancal {
   activo             Boolean     @default(true)
   createdAt          DateTime    @default(now())
 
-  plataformaActual   Plataforma? @relation(fields: [plataformaActualId], references: [id])
-  eventos            Evento[]
-  baja               BancalBaja?
+  plataformaActual      Plataforma?        @relation(fields: [plataformaActualId], references: [id])
+  eventos               Evento[]
+  baja                  BancalBaja?
+  asociacionComoOriginal BancalAsociacion[] @relation("AsociacionOriginal")
+  asociacionComoFinal    BancalAsociacion[] @relation("AsociacionFinal")
 
   @@map("bancales")
 }
@@ -97,14 +99,30 @@ model Evento {
   usuario      String
   observaciones String?
   fuente       FuenteEvento
+  asociacionId String?
   createdAt    DateTime     @default(now())
 
   bancal       Bancal       @relation(fields: [bancalId], references: [id])
   plataforma   Plataforma   @relation(fields: [plataformaId], references: [id])
+  asociacion   BancalAsociacion? @relation(fields: [asociacionId], references: [id])
 
   @@index([plataformaId, tipo, lectura])
   @@index([bancalId, lectura])
   @@map("eventos")
+}
+
+model BancalAsociacion {
+  id              String   @id @default(cuid())
+  originalCodigo  String
+  originalId      String
+  finalBancalId   String
+  fechaAsociacion DateTime @default(now())
+
+  original        Bancal   @relation("AsociacionOriginal", fields: [originalId], references: [id])
+  final           Bancal   @relation("AsociacionFinal", fields: [finalBancalId], references: [id])
+  eventos         Evento[]
+
+  @@map("bancales_asociacion")
 }
 
 model Configuracion {
