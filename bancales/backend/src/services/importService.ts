@@ -9,8 +9,8 @@ interface ImportResult {
 
 function detectCliente(codigo: string): Cliente | null {
   const upper = codigo.toUpperCase();
-  if (upper.startsWith('BC')) return 'MICHELIN';
-  if (upper.startsWith('CAT')) return 'CONTINENTAL';
+  if (upper.startsWith('BC') || upper.startsWith('MICH')) return 'MICHELIN';
+  if (upper.startsWith('CAT') || upper.startsWith('CONT')) return 'CONTINENTAL';
   return null;
 }
 
